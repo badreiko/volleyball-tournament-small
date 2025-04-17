@@ -373,24 +373,26 @@ const App = () => {
       team1SetsWon,
       team2SetsWon
     };
-    setGames((prev) => [...prev, newGame]);
 
-    setResults((prev) =>
-      prev.map((r) => {
-        const teamIdx = teams.findIndex((t) => t.name === r.name);
-        if (teamIdx === -1) return r; // не участвовала в игре
-        return {
-          ...r,
-          points: r.points + (teamIdx === 0 ? points1 : points2),
-          wins: r.wins + (teamIdx === winner ? 1 : 0),
-          losses: r.losses + (teamIdx === loser ? 1 : 0),
-          scoreDiff: r.scoreDiff + (teamIdx === 0 ? score1 - score2 : score2 - score1),
-          gamesPlayed: r.gamesPlayed + 1,
-          setsWon: r.setsWon + (teamIdx === 0 ? team1SetsWon : team2SetsWon),
-          setsLost: r.setsLost + (teamIdx === 0 ? team2SetsWon : team1SetsWon),
-        };
-      })
-    );
+    // Вычисляем новые значения games/results
+    const updatedGames = [...games, newGame];
+    const updatedResults = results.map((r) => {
+      const teamIdx = teams.findIndex((t) => t.name === r.name);
+      if (teamIdx === -1) return r; // не участвовала в игре
+      return {
+        ...r,
+        points: r.points + (teamIdx === 0 ? points1 : points2),
+        wins: r.wins + (teamIdx === winner ? 1 : 0),
+        losses: r.losses + (teamIdx === loser ? 1 : 0),
+        scoreDiff: r.scoreDiff + (teamIdx === 0 ? score1 - score2 : score2 - score1),
+        gamesPlayed: r.gamesPlayed + 1,
+        setsWon: r.setsWon + (teamIdx === 0 ? team1SetsWon : team2SetsWon),
+        setsLost: r.setsLost + (teamIdx === 0 ? team2SetsWon : team1SetsWon),
+      };
+    });
+
+    setGames(updatedGames);
+    setResults(updatedResults);
 
     // Проверка завершения турнира по полному расписанию
     const isTournamentOver = currentRound + 1 >= fullSchedule.length;
@@ -398,8 +400,8 @@ const App = () => {
     if (isTournamentOver) {
       saveTournamentToHistory({
         teams,
-        games: [...games, newGame],
-        results,
+        games: updatedGames,
+        results: updatedResults,
       });
       setScreen('results');
       showNotification(
