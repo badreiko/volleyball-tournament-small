@@ -1,0 +1,86 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html, body {
+    font-family: 'Orbitron', system-ui, sans-serif;
+    min-height: 100vh;
+  }
+  
+  /* Фоновый паттерн */
+  html {
+    background-image: url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40"%3E%3Cg fill="%2341A1C7" fill-opacity="0.1"%3E%3Cpath d="M0 0h40v40H0z"/%3E%3Cpath d="M20 20l10-10L30 0 20 10 10 0 0 10 10 20 0 30l10 10 10-10 10 10 10-10z"/%3E%3C/g%3E%3C/svg%3E');
+  }
+}
+
+/* Дополнительные кастомные компоненты через Tailwind */
+@layer components {
+  .btn {
+    @apply px-4 py-2 rounded-md font-semibold transition-all duration-300 transform hover:scale-105;
+  }
+  .btn-accent {
+    @apply bg-accent text-white hover:bg-red-600;
+  }
+  .btn-cyan {
+    @apply bg-cyan text-darkBlue hover:bg-cyan;
+  }
+  .card {
+    @apply bg-peach shadow-lg shadow-darkPurple/50 rounded-lg p-6;
+  }
+  .text-primary {
+    @apply text-darkBlue;
+  }
+  .bg-dark {
+    @apply bg-gradient-to-br from-darkPurple to-darkBlue;
+  }
+  .input-field {
+    @apply w-full p-3 border border-darkBlue/30 rounded-lg bg-peach/30 text-darkBlue placeholder-darkBlue/50 focus:outline-none focus:ring-2 focus:ring-cyan focus:border-transparent transition-all;
+  }
+  .table-row {
+    @apply border-b border-darkBlue/30 hover:bg-cyan/10 transition-colors;
+  }
+  .glass-effect {
+    @apply bg-peach/20 backdrop-blur-lg border border-darkBlue/10 rounded-lg shadow-md;
+  }
+  .modal-header {
+    @apply bg-gradient-to-r from-darkBlue to-cyan text-white p-6 rounded-t-xl;
+  }
+  .modal-body {
+    @apply p-6 max-h-[80vh] overflow-y-auto bg-white rounded-b-xl;
+  }
+}
+
+@layer utilities {
+  /* Кастомные анимации */
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes pulseGlow {
+    0% {
+      box-shadow: 0 0 5px rgba(65, 161, 199, 0.5);
+    }
+    50% {
+      box-shadow: 0 0 15px rgba(65, 161, 199, 0.8);
+    }
+    100% {
+      box-shadow: 0 0 5px rgba(65, 161, 199, 0.5);
+    }
+  }
+
+  .fade-in {
+    animation: fadeIn 0.5s ease-out;
+  }
+
+  .glow {
+    animation: pulseGlow 2s infinite ease-in-out;
+  }
+}
