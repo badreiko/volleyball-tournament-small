@@ -241,6 +241,10 @@ const App = () => {
     setGames([]);
     setScreen('game');
     
+    // Сбрасываем диалог подтверждения
+    setShowResetConfirm(false);
+    setPendingPlayersList(null);
+    
     // Показать уведомление
     showNotification(
       'Турнир создан', 
@@ -266,14 +270,44 @@ const App = () => {
     }
   }, [players, teams, startNewTournament]);
 
+  // --- Сброс турнира ---
+  const handleNewTournament = useCallback(() => {
+    // Проверка, есть ли активный турнир
+    const isActiveTournament = players.length > 0 && teams.length > 0;
+    
+    if (isActiveTournament) {
+      // Если есть активный турнир, показываем диалог подтверждения
+      setShowResetConfirm(true);
+      setPendingPlayersList(null); // Это важно! Null означает, что мы просто сбрасываем турнир, а не начинаем новый
+    } else {
+      // Если активного турнира нет, сразу переходим на экран ввода игроков
+      setScreen('input');
+    }
+  }, [players, teams]);
+
   // --- Подтверждение сброса турнира ---
   const confirmResetTournament = useCallback(() => {
     if (pendingPlayersList) {
+      // Если у нас есть ожидающий список игроков, запускаем новый турнир с ними
       startNewTournament(pendingPlayersList);
-      setPendingPlayersList(null);
+    } else {
+      // Иначе просто сбрасываем текущий турнир
+      clearTournamentState();
+      setPlayers([]);
+      setTeams([]);
+      setGames([]);
+      setResults([]);
+      setCurrentGameTeams([]);
+      setRestingTeams([]);
+      setFormat(null);
+      setFullSchedule([]);
+      setCurrentRound(0);
+      setScreen('input');
+      setShowResetConfirm(false);
+      
+      showNotification('Новый турнир', 'Прошлый турнир очищен, можно начинать новый.', 'info');
     }
-    setShowResetConfirm(false);
-  }, [pendingPlayersList, startNewTournament]);
+  }, [pendingPlayersList, startNewTournament, showNotification]);
 
   // --- Отмена сброса турнира ---
   const cancelResetTournament = useCallback(() => {
@@ -392,23 +426,6 @@ const App = () => {
       );
     }
   }, [format, fullSchedule, currentRound, games, results, settings, showNotification]);
-
-  // --- Сброс турнира ---
-  const handleNewTournament = useCallback(() => {
-    clearTournamentState();
-    setPlayers([]);
-    setTeams([]);
-    setGames([]);
-    setResults([]);
-    setCurrentGameTeams([]);
-    setRestingTeams([]);
-    setFormat(null);
-    setFullSchedule([]);
-    setCurrentRound(0);
-    setScreen('input');
-    
-    showNotification('Новый турнир', 'Прошлый турнир очищен, можно начинать новый.', 'info');
-  }, [showNotification]);
 
   // --- Обработчик обновления настроек ---
   const handleSettingsUpdate = useCallback((newSettings) => {
@@ -693,8 +710,8 @@ const App = () => {
         </div>
       )}
 
-{/* Sidebar для desktop */}
-<aside className={`hidden md:block md:w-64 ${themeClasses.sidebar} shadow-md md:h-screen md:sticky md:top-0 z-40 md:border-r shrink-0 transition-colors duration-300`}>
+      {/* Sidebar для desktop */}
+      <aside className={`hidden md:block md:w-64 ${themeClasses.sidebar} shadow-md md:h-screen md:sticky md:top-0 z-40 md:border-r shrink-0 transition-colors duration-300`}>
         <div className="p-4 border-b border-[#0B8E8D]/20 flex justify-between items-center">
           <h1 className={`text-xl font-bold ${themeClasses.title} flex items-center`}>
             <FaVolleyballBall className="mr-2 text-[#0B8E8D]" /> Volleyball Турнир
@@ -832,7 +849,7 @@ const App = () => {
               </div>
             </div>
             <div className="modal-body">
-              <p className="mb-4">У вас уже запущен турнир. Вы уверены, что хотите сбросить его и начать новый?</p>
+              <p className="mb-4">У вас уже запущен турнир. Все данные будут потеряны! Вы уверены, что хотите сбросить его {pendingPlayersList ? "и начать новый" : ""}?</p>
               <div className="flex justify-end gap-3">
                 <button
                   onClick={cancelResetTournament}
@@ -841,10 +858,10 @@ const App = () => {
                   Отмена
                 </button>
                 <button
-                  onClick={confirmResetTournament}
+                  onClick={pendingPlayersList ? () => startNewTournament(pendingPlayersList) : confirmResetTournament}
                   className="py-2 px-4 bg-red-600 text-white rounded-lg hover:bg-red-700"
                 >
-                  Сбросить и начать новый
+                  {pendingPlayersList ? "Сбросить и начать новый" : "Сбросить турнир"}
                 </button>
               </div>
             </div>
