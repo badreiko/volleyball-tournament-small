@@ -394,6 +394,51 @@ const App = () => {
     setGames(updatedGames);
     setResults(updatedResults);
 
+    setResults((prev) =>
+	  prev.map((r) => {
+		// Проверка для обычных команд
+		const teamIdx = teams.findIndex((t) => t.name === r.name);
+		if (teamIdx !== -1) {
+		  return {
+			...r,
+			points: r.points + (teamIdx === 0 ? points1 : points2),
+			wins: r.wins + (teamIdx === winner ? 1 : 0),
+			losses: r.losses || 0 + (teamIdx === loser ? 1 : 0),
+			scoreDiff: r.scoreDiff + (teamIdx === 0 ? score1 - score2 : score2 - score1),
+			gamesPlayed: r.gamesPlayed + 1,
+			setsWon: r.setsWon + (teamIdx === 0 ? team1SetsWon : team2SetsWon),
+			setsLost: r.setsLost + (teamIdx === 0 ? team2SetsWon : team1SetsWon),
+		  };
+		}
+		
+		// Проверка для составных команд
+		let teamFound = false;
+		let isTeam1 = false;
+		
+		if (teams[0].originalTeams) {
+		  teamFound = teams[0].originalTeams.some(ot => ot.name === r.name);
+		  if (teamFound) isTeam1 = true;
+		}
+		
+		if (!teamFound && teams[1].originalTeams) {
+		  teamFound = teams[1].originalTeams.some(ot => ot.name === r.name);
+		}
+		
+		if (!teamFound) return r; // Команда не участвовала в игре
+		
+		return {
+		  ...r,
+		  points: r.points + (isTeam1 ? points1 : points2),
+		  wins: r.wins + (isTeam1 === (winner === 0) ? 1 : 0),
+		  losses: (r.losses || 0) + (isTeam1 === (loser === 0) ? 1 : 0),
+		  scoreDiff: r.scoreDiff + (isTeam1 ? score1 - score2 : score2 - score1),
+		  gamesPlayed: r.gamesPlayed + 1,
+		  setsWon: r.setsWon + (isTeam1 ? team1SetsWon : team2SetsWon),
+		  setsLost: r.setsLost + (isTeam1 ? team2SetsWon : team1SetsWon),
+		};
+	  })
+	);
+
     // Проверка завершения турнира по полному расписанию
     const isTournamentOver = currentRound + 1 >= fullSchedule.length;
 
