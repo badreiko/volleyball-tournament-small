@@ -169,6 +169,8 @@ const GameBoard = ({ teams, resting, onGameEnd, settings }) => {
     setIsTimerRunning(false);
     setGameFinished(false);
     setErrorMessage("");
+    setScoreHistory([]);
+    setIsCourtSwitched(false);
   };
   
   // Форматирование таймера
@@ -294,7 +296,7 @@ const GameBoard = ({ teams, resting, onGameEnd, settings }) => {
                     className="btn btn-accent w-16 h-16 rounded-full mb-2"
                     disabled={gameFinished || score1 <= 0}
                   >
-                    <FaMinus className="text-xl" />
+                    <IoMdRemoveCircleOutline className="text-2xl" />
                   </button>
                 )}
                 <motion.span
@@ -311,7 +313,7 @@ const GameBoard = ({ teams, resting, onGameEnd, settings }) => {
                     className="btn btn-cyan glow w-16 h-16 rounded-full mt-2"
                     disabled={gameFinished}
                   >
-                    <FaPlus className="text-xl" />
+                    <IoMdAddCircleOutline className="text-2xl" />
                   </button>
                 )}
               </div>
@@ -331,7 +333,7 @@ const GameBoard = ({ teams, resting, onGameEnd, settings }) => {
                     className="btn btn-accent w-16 h-16 rounded-full mb-2"
                     disabled={gameFinished || score2 <= 0}
                   >
-                    <FaMinus className="text-xl" />
+                    <IoMdRemoveCircleOutline className="text-2xl" />
                   </button>
                 )}
                 <motion.span
@@ -348,90 +350,36 @@ const GameBoard = ({ teams, resting, onGameEnd, settings }) => {
                     className="btn btn-cyan glow w-16 h-16 rounded-full mt-2"
                     disabled={gameFinished}
                   >
-                    <FaPlus className="text-xl" />
+                    <IoMdAddCircleOutline className="text-2xl" />
                   </button>
                 )}
               </div>
             </div>
           </div>
           
+          {/* Индикатор свайпа для мобильных устройств */}
           {swipeMode && (
-            <div className="mt-3 text-sm text-gray-500 text-center">
-              <FaHandPointUp className="inline mr-1" /> Свайп влево/вправо для изменения счёта
+            <div className="mt-6 flex justify-center">
+              <div className="bg-gray-100 p-2 rounded-lg text-center">
+                <FaHandPointUp className="inline-block mr-2 text-darkBlue/60" />
+                <span className="text-sm text-darkBlue/60">Свайпните влево/вправо для изменения счёта</span>
+              </div>
             </div>
           )}
-        </div>
-        
-        {/* Информация о командах - вынесена в отдельные карточки */}
-        <div className="p-4 rounded-xl glass-effect mb-4">
-          <h3 className="font-semibold text-darkBlue text-lg mb-2">
-            Команда 1: {teams[0].name}
-          </h3>
-          <p className="text-darkBlue mb-2">{teams[0].players.join(', ')}</p>
           
-          {settings?.showTeamRatings && teams[0].teamRating && (
-            <div className="flex items-center text-sm text-darkBlue/70">
-              <FaExchangeAlt className="mr-1 text-cyan" /> Рейтинг команды: {teams[0].teamRating}
-            </div>
-          )}
-        </div>
-        
-        <div className="p-4 rounded-xl glass-effect mb-4">
-          <h3 className="font-semibold text-darkBlue text-lg mb-2">
-            Команда 2: {teams[1].name}
-          </h3>
-          <p className="text-darkBlue mb-2">{teams[1].players.join(', ')}</p>
-          
-          {settings?.showTeamRatings && teams[1].teamRating && (
-            <div className="flex items-center text-sm text-darkBlue/70">
-              <FaExchangeAlt className="mr-1 text-cyan" /> Рейтинг команды: {teams[1].teamRating}
-            </div>
-          )}
-        </div>
-      </div>
-      
-      {/* Таймер для формата двоек */}
-      {teams.length === 2 && (
-        <div className="p-4 rounded-xl glass-effect mb-6">
-          <h3 className="font-semibold text-darkBlue text-lg mb-2 text-center">
-            Таймер
-          </h3>
-          <p className="text-darkBlue text-4xl mb-4 text-center font-bold">
-            {formatTime(timer)}
-          </p>
-          <div className="flex justify-center gap-3">
+          {/* Таймер игры */}
+          <div className="mt-6 flex justify-between items-center">
+            <div className="text-sm text-darkBlue/70">Время игры:</div>
+            <div className="text-xl font-semibold">{formatTime(timer)}</div>
             <button
               onClick={() => setIsTimerRunning(!isTimerRunning)}
-              className="btn btn-accent w-full"
-              disabled={gameFinished}
+              className={`btn btn-sm ${isTimerRunning ? 'btn-accent' : 'btn-cyan'}`}
             >
               {isTimerRunning ? 'Пауза' : 'Старт'}
             </button>
-            <button
-              onClick={() => setTimer(settings?.roundDuration * 60 || 600)}
-              className="btn btn-cyan w-full"
-              disabled={gameFinished}
-            >
-              Сбросить
-            </button>
           </div>
         </div>
-      )}
-      
-      {/* Отображение отдыхающих команд */}
-      {resting.length > 0 && (
-        <div className="mb-6 p-4 rounded-xl glass-effect">
-          <h3 className="font-semibold text-darkBlue text-lg mb-2">Отдыхают:</h3>
-          <div className="grid grid-cols-1 gap-2">
-            {resting.map((team, index) => (
-              <div key={index} className="bg-white/70 rounded-lg p-2 text-center">
-                <p className="font-semibold text-darkBlue">{team.name}</p>
-                <p className="text-sm text-darkBlue/70">{team.players.join(', ')}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
+      </div>
       
       <div className="flex flex-col gap-3 mt-6">
         <button 
