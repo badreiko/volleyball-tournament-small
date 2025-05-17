@@ -5,9 +5,9 @@ import {
   FaUndo, 
   FaChartLine, 
   FaHandPointUp,
-  FaHistory
+  FaHistory,
+  FaExchangeAlt as FaSwitch
 } from 'react-icons/fa';
-import { FaSwitch } from "react-icons/fa6";
 import { IoMdAddCircleOutline, IoMdRemoveCircleOutline } from 'react-icons/io';
 import { MdSwipe } from 'react-icons/md';
 import { motion } from 'framer-motion';
