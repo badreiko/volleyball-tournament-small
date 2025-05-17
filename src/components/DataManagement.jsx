@@ -1,6 +1,7 @@
-import { useState } from 'react';
-import { FaDownload, FaUpload, FaTrash, FaExclamationTriangle, FaCheck } from 'react-icons/fa';
+import { useState, useEffect } from 'react';
+import { FaDownload, FaUpload, FaTrash, FaExclamationTriangle, FaCheck, FaArrowLeft } from 'react-icons/fa';
 import { exportData, importData, clearTournamentState } from '../utils/storage';
+import { t } from '../localization';
 
 const DataManagement = ({ onBack }) => {
   const [importing, setImporting] = useState(false);
@@ -13,8 +14,8 @@ const DataManagement = ({ onBack }) => {
     setExportResult({
       success,
       message: success 
-        ? 'Данные успешно экспортированы' 
-        : 'Произошла ошибка при экспорте данных'
+        ? t('dataManagement.exportSuccess')
+        : t('dataManagement.exportError')
     });
     
     // Скрываем сообщение через 3 секунды
@@ -44,8 +45,8 @@ const DataManagement = ({ onBack }) => {
         setImportResult({
           success,
           message: success 
-            ? 'Данные успешно импортированы' 
-            : 'Произошла ошибка при импорте данных'
+            ? t('dataManagement.importSuccess')
+            : t('dataManagement.importError')
         });
         
         // Скрываем сообщение через 3 секунды
@@ -55,7 +56,7 @@ const DataManagement = ({ onBack }) => {
       } catch (error) {
         setImportResult({
           success: false,
-          message: 'Произошла ошибка при обработке файла'
+          message: t('dataManagement.fileError')
         });
       }
       
@@ -65,7 +66,7 @@ const DataManagement = ({ onBack }) => {
     reader.onerror = () => {
       setImportResult({
         success: false,
-        message: 'Ошибка чтения файла'
+        message: t('dataManagement.readError')
       });
       setImporting(false);
     };
@@ -81,26 +82,26 @@ const DataManagement = ({ onBack }) => {
   return (
     <div className="p-4 md:p-6">
       <button onClick={onBack} className="mb-4 flex items-center text-darkBlue hover:text-cyan transition-colors">
-        <FaDownload className="mr-2" /> Назад
+        <FaArrowLeft className="mr-2" /> {t('common.back')}
       </button>
       
       <div className="card mx-auto max-w-xl fade-in">
         <h2 className="text-2xl font-bold text-darkBlue mb-6 flex items-center">
-          <FaDownload className="mr-3 text-cyan" /> Управление данными
+          <FaDownload className="mr-3 text-cyan" /> {t('dataManagement.title')}
         </h2>
         
         <div className="space-y-6">
           {/* Экспорт данных */}
           <div className="bg-gradient-to-r from-cyan/10 to-darkBlue/5 p-4 rounded-lg">
-            <h3 className="text-lg font-semibold text-darkBlue mb-3">Экспорт данных</h3>
+            <h3 className="text-lg font-semibold text-darkBlue mb-3">{t('dataManagement.exportData')}</h3>
             <p className="text-darkBlue/80 mb-4">
-              Сохраните все данные турниров, историю и рейтинги игроков в файл JSON для резервного копирования или переноса на другое устройство.
+              {t('dataManagement.exportDescription')}
             </p>
             <button 
               onClick={handleExportData} 
               className="btn btn-cyan w-full sm:w-auto flex items-center justify-center"
             >
-              <FaDownload className="mr-2" /> Экспортировать данные
+              <FaDownload className="mr-2" /> {t('dataManagement.exportButton')}
             </button>
             
             {exportResult && (
@@ -115,9 +116,9 @@ const DataManagement = ({ onBack }) => {
           
           {/* Импорт данных */}
           <div className="bg-gradient-to-r from-cyan/10 to-darkBlue/5 p-4 rounded-lg">
-            <h3 className="text-lg font-semibold text-darkBlue mb-3">Импорт данных</h3>
+            <h3 className="text-lg font-semibold text-darkBlue mb-3">{t('dataManagement.importData')}</h3>
             <p className="text-darkBlue/80 mb-4">
-              Загрузите ранее экспортированный файл JSON для восстановления данных о турнирах, истории и рейтингах игроков.
+              {t('dataManagement.importDescription')}
             </p>
             
             {!importing ? (
@@ -125,7 +126,7 @@ const DataManagement = ({ onBack }) => {
                 onClick={handleImportClick} 
                 className="btn btn-cyan w-full sm:w-auto flex items-center justify-center"
               >
-                <FaUpload className="mr-2" /> Импортировать данные
+                <FaUpload className="mr-2" /> {t('dataManagement.importButton')}
               </button>
             ) : (
               <div className="bg-white p-3 rounded-lg border border-darkBlue/20">
@@ -150,9 +151,9 @@ const DataManagement = ({ onBack }) => {
           
           {/* Очистка данных */}
           <div className="bg-gradient-to-r from-accent/10 to-darkBlue/5 p-4 rounded-lg">
-            <h3 className="text-lg font-semibold text-darkBlue mb-3">Очистка данных</h3>
+            <h3 className="text-lg font-semibold text-darkBlue mb-3">{t('dataManagement.dataClear')}</h3>
             <p className="text-darkBlue/80 mb-4">
-              Удаление текущего турнира. Это действие нельзя отменить.
+              {t('dataManagement.clearDescription')}
             </p>
             
             {!showClearConfirm ? (
@@ -160,25 +161,25 @@ const DataManagement = ({ onBack }) => {
                 onClick={() => setShowClearConfirm(true)} 
                 className="btn btn-accent w-full sm:w-auto flex items-center justify-center"
               >
-                <FaTrash className="mr-2" /> Очистить текущий турнир
+                <FaTrash className="mr-2" /> {t('dataManagement.clearButton')}
               </button>
             ) : (
               <div className="bg-red-50 p-3 rounded-lg">
                 <p className="text-red-800 mb-3 flex items-center">
-                  <FaExclamationTriangle className="mr-2" /> Вы уверены? Это действие нельзя отменить.
+                  <FaExclamationTriangle className="mr-2" /> {t('dataManagement.clearConfirm')}
                 </p>
                 <div className="flex gap-3">
                   <button 
                     onClick={() => setShowClearConfirm(false)} 
                     className="py-2 px-4 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 flex-1"
                   >
-                    Отмена
+                    {t('common.cancel')}
                   </button>
                   <button 
                     onClick={handleClearData} 
                     className="py-2 px-4 bg-red-600 text-white rounded-lg hover:bg-red-700 flex-1"
                   >
-                    Удалить
+                    {t('common.delete')}
                   </button>
                 </div>
               </div>

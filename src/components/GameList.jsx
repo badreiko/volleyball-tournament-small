@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { FaArrowLeft, FaChevronRight, FaSort, FaSortUp, FaSortDown, FaFilter, FaPlay, FaCheck } from 'react-icons/fa';
+import { t } from '../localization';
 
 const GameList = ({ games, onBack, teams, fullSchedule, currentRound, onStartGame }) => {
   const [sortBy, setSortBy] = useState('round');
@@ -105,13 +106,13 @@ const GameList = ({ games, onBack, teams, fullSchedule, currentRound, onStartGam
     return (
       <div className="p-4 rounded-md bg-gradient-to-r from-cyan/20 to-darkBlue/10 border-l-4 border-cyan mb-6">
         <h3 className="font-semibold text-darkBlue flex items-center">
-          <FaChevronRight className="mr-2 text-cyan" /> Следующая игра (Раунд {nextGame.round})
+          <FaChevronRight className="mr-2 text-cyan" /> {t('gameList.nextGame')} ({t('gameList.round')} {nextGame.round})
         </h3>
         <div className="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-2">
           <div className="col-span-1 sm:text-right px-2">
             <div className="font-semibold text-darkBlue">{nextGame.teams[0].name}</div>
             <div className="text-sm text-darkBlue/70">
-              {nextGame.teams[0].teamRating && `Рейтинг: ${nextGame.teams[0].teamRating}`}
+              {nextGame.teams[0].teamRating && `${t('playersRating.rating')}: ${nextGame.teams[0].teamRating}`}
             </div>
           </div>
           <div className="col-span-1 text-center flex items-center justify-center">
@@ -120,21 +121,21 @@ const GameList = ({ games, onBack, teams, fullSchedule, currentRound, onStartGam
           <div className="col-span-1 px-2">
             <div className="font-semibold text-darkBlue">{nextGame.teams[1].name}</div>
             <div className="text-sm text-darkBlue/70">
-              {nextGame.teams[1].teamRating && `Рейтинг: ${nextGame.teams[1].teamRating}`}
+              {nextGame.teams[1].teamRating && `${t('playersRating.rating')}: ${nextGame.teams[1].teamRating}`}
             </div>
           </div>
         </div>
         <div className="mt-3 space-y-2">
           <p className="text-sm text-darkBlue/70">
-            <span className="font-semibold">Состав {nextGame.teams[0].name}:</span> {nextGame.teams[0].players.join(', ')}
+            <span className="font-semibold">{t('gameList.lineup')} {nextGame.teams[0].name}:</span> {nextGame.teams[0].players.join(', ')}
           </p>
           <p className="text-sm text-darkBlue/70">
-            <span className="font-semibold">Состав {nextGame.teams[1].name}:</span> {nextGame.teams[1].players.join(', ')}
+            <span className="font-semibold">{t('gameList.lineup')} {nextGame.teams[1].name}:</span> {nextGame.teams[1].players.join(', ')}
           </p>
           
           {nextGame.resting && nextGame.resting.length > 0 && (
             <p className="text-sm text-darkBlue/70">
-              <span className="font-semibold">Отдыхают:</span> {nextGame.resting.map(team => team.name).join(', ')}
+              <span className="font-semibold">{t('gameList.restingTeams')}</span> {nextGame.resting.map(team => team.name).join(', ')}
             </p>
           )}
         </div>
@@ -142,7 +143,7 @@ const GameList = ({ games, onBack, teams, fullSchedule, currentRound, onStartGam
         {nextGame.round === currentRound + 1 && (
           <div className="mt-4 text-center">
             <button onClick={() => onStartGame(nextGame.round)} className="btn btn-cyan inline-block">
-              <FaPlay className="mr-2 inline" /> Начать игру
+              <FaPlay className="mr-2 inline" /> {t('gameList.startGame')}
             </button>
           </div>
         )}
@@ -166,11 +167,11 @@ const GameList = ({ games, onBack, teams, fullSchedule, currentRound, onStartGam
         <button 
           onClick={onBack} 
           className="p-2 rounded-full bg-darkBlue/10 hover:bg-darkBlue/20 transition-colors mr-3"
-          aria-label="Назад"
+          aria-label={t('common.back')}
         >
           <FaArrowLeft className="text-darkBlue" />
         </button>
-        <h2 className="text-2xl font-bold text-darkBlue">Расписание игр</h2>
+        <h2 className="text-2xl font-bold text-darkBlue">{t('gameList.scheduleTitle')}</h2>
       </div>
       
       <div className="card mx-auto max-w-4xl fade-in">
@@ -183,7 +184,7 @@ const GameList = ({ games, onBack, teams, fullSchedule, currentRound, onStartGam
                 sortBy === 'round' ? 'bg-cyan/20 text-darkBlue' : 'bg-darkBlue/5 text-darkBlue/70'
               }`}
             >
-              По раунду {getSortIcon('round')}
+              {t('gameList.sortByRound')} {getSortIcon('round')}
             </button>
             <button 
               onClick={() => handleSort('date')} 
@@ -191,7 +192,7 @@ const GameList = ({ games, onBack, teams, fullSchedule, currentRound, onStartGam
                 sortBy === 'date' ? 'bg-cyan/20 text-darkBlue' : 'bg-darkBlue/5 text-darkBlue/70'
               }`}
             >
-              По дате {getSortIcon('date')}
+              {t('gameList.sortByDate')} {getSortIcon('date')}
             </button>
             <button 
               onClick={() => handleSort('score')} 
@@ -199,7 +200,7 @@ const GameList = ({ games, onBack, teams, fullSchedule, currentRound, onStartGam
                 sortBy === 'score' ? 'bg-cyan/20 text-darkBlue' : 'bg-darkBlue/5 text-darkBlue/70'
               }`}
             >
-              По счёту {getSortIcon('score')}
+              {t('gameList.sortByScore')} {getSortIcon('score')}
             </button>
             <button 
               onClick={() => handleSort('team')} 
@@ -207,34 +208,34 @@ const GameList = ({ games, onBack, teams, fullSchedule, currentRound, onStartGam
                 sortBy === 'team' ? 'bg-cyan/20 text-darkBlue' : 'bg-darkBlue/5 text-darkBlue/70'
               }`}
             >
-              По команде {getSortIcon('team')}
+              {t('gameList.sortByTeam')} {getSortIcon('team')}
             </button>
           </div>
           <button 
             onClick={() => setShowFilter(!showFilter)} 
             className="px-3 py-1 rounded-md text-sm flex items-center bg-darkBlue/5 text-darkBlue/70"
           >
-            <FaFilter className="mr-1" /> Фильтр
+            <FaFilter className="mr-1" /> {t('gameList.filter')}
           </button>
         </div>
         
         {/* Фильтр по команде */}
         {showFilter && (
           <div className="mb-6 p-3 bg-darkBlue/5 rounded-lg">
-            <div className="mb-2 text-sm text-darkBlue/70">Фильтр по команде или игроку:</div>
+            <div className="mb-2 text-sm text-darkBlue/70">{t('gameList.filterByTeamOrPlayer')}:</div>
             <div className="flex gap-2">
               <input 
                 type="text" 
                 value={filterTeam}
                 onChange={(e) => setFilterTeam(e.target.value)}
-                placeholder="Введите название команды или имя игрока"
+                placeholder={t('gameList.filterPlaceholder')}
                 className="flex-1 p-2 text-sm rounded border border-darkBlue/30 focus:outline-none focus:ring-1 focus:ring-cyan"
               />
               <button 
                 onClick={() => setFilterTeam('')}
                 className="px-3 py-1 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 transition-colors"
               >
-                Сбросить
+                {t('gameList.resetFilter')}
               </button>
             </div>
             {teamFilterOptions.length > 0 && (
@@ -262,12 +263,12 @@ const GameList = ({ games, onBack, teams, fullSchedule, currentRound, onStartGam
         {/* Список игр */}
         {allGames.length === 0 ? (
           <div className="p-8 text-center bg-darkBlue/5 rounded-lg">
-            <p className="text-darkBlue text-lg">Расписание пока не сформировано.</p>
-            <p className="text-darkBlue/70 mt-2">После старта турнира здесь появится полное расписание игр</p>
+            <p className="text-darkBlue text-lg">{t('gameList.noSchedule')}</p>
+            <p className="text-darkBlue/70 mt-2">{t('gameList.scheduleMessage')}</p>
           </div>
         ) : (
           <div>
-            <h3 className="font-semibold text-darkBlue mb-3">Всего игр: {sortedGames.length}</h3>
+            <h3 className="font-semibold text-darkBlue mb-3">{t('gameList.totalGames')}: {sortedGames.length}</h3>
             <div className="space-y-4">
               {sortedGames.map((game, index) => (
                 <div 
@@ -280,15 +281,15 @@ const GameList = ({ games, onBack, teams, fullSchedule, currentRound, onStartGam
                 >
                   <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-3">
                     <h3 className="font-semibold text-darkBlue flex items-center">
-                      Игра {game.round} 
+                      {t('gameList.game')} {game.round} 
                       {game.isUpcoming && 
                         <span className="ml-2 text-sm bg-darkBlue/10 px-2 py-0.5 rounded-full">
-                          Предстоит
+                          {t('gameList.upcoming')}
                         </span>
                       }
                     </h3>
                     <div className="text-sm text-darkBlue/70">
-                      {game.timestamp ? new Date(game.timestamp).toLocaleString() : 'Не сыграна'}
+                      {game.timestamp ? new Date(game.timestamp).toLocaleString() : t('gameList.notPlayed')}
                     </div>
                   </div>
                   
@@ -303,7 +304,7 @@ const GameList = ({ games, onBack, teams, fullSchedule, currentRound, onStartGam
                         {game.score1}
                       </div>
                       <div className="text-sm text-darkBlue/70">
-                        Очки: {game.points1}
+                        {t('gameList.points')} {game.points1}
                       </div>
                     </div>
                     <div className="col-span-1 text-center flex items-center justify-center">
@@ -319,23 +320,23 @@ const GameList = ({ games, onBack, teams, fullSchedule, currentRound, onStartGam
                         {game.score2}
                       </div>
                       <div className="text-sm text-darkBlue/70">
-                        Очки: {game.points2}
+                        {t('gameList.points')} {game.points2}
                       </div>
                     </div>
                   </div>
                   
                   <div className="mt-3 space-y-2 pt-2 border-t border-darkBlue/10">
                     <p className="text-sm text-darkBlue/70">
-                      <span className="font-semibold">Состав {game.teams[0].name}:</span> {game.teams[0].players.join(', ')}
+                      <span className="font-semibold">{t('gameList.lineup')} {game.teams[0].name}:</span> {game.teams[0].players.join(', ')}
                     </p>
                     <p className="text-sm text-darkBlue/70">
-                      <span className="font-semibold">Состав {game.teams[1].name}:</span> {game.teams[1].players.join(', ')}
+                      <span className="font-semibold">{t('gameList.lineup')} {game.teams[1].name}:</span> {game.teams[1].players.join(', ')}
                     </p>
                     
                     {/* Отдыхающие команды */}
                     {game.resting && game.resting.length > 0 && (
                       <p className="text-sm text-darkBlue/70 mt-2">
-                        <span className="font-semibold">Отдыхают:</span> {game.resting.map(team => team.name).join(', ')}
+                        <span className="font-semibold">{t('gameList.restingTeams')}</span> {game.resting.map(team => team.name).join(', ')}
                       </p>
                     )}
                   </div>
@@ -347,7 +348,7 @@ const GameList = ({ games, onBack, teams, fullSchedule, currentRound, onStartGam
                         onClick={() => onStartGame(game.round)}
                         className="btn btn-cyan inline-flex items-center"
                       >
-                        <FaPlay className="mr-2" /> Начать игру
+                        <FaPlay className="mr-2" /> {t('gameList.startGame')}
                       </button>
                     </div>
                   )}
@@ -359,7 +360,7 @@ const GameList = ({ games, onBack, teams, fullSchedule, currentRound, onStartGam
         
         <div className="mt-6">
           <button onClick={onBack} className="btn btn-accent w-full">
-            Вернуться к игре
+            {t('gameList.returnToGame')}
           </button>
         </div>
       </div>

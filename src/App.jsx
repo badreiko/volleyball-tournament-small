@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { 
   FaVolleyballBall, 
   FaUsers, 
@@ -34,10 +34,8 @@ import TournamentSettings from './components/TournamentSettings';
 import PlayersRating from './components/PlayersRating';
 import PlayerStats from './components/PlayerStats';
 import DataManagement from './components/DataManagement';
+import LanguageSwitcher from './localization/LanguageSwitcher';
 import { generateTeams, selectGameTeams, predictGameResult, generateFullSchedule } from './utils/teamGenerator';
-import logo from './assets/images/logo.svg';
-import { getTranslations } from './locales';
-import LanguageSwitcher from './components/LanguageSwitcher';
 import { 
   saveTournamentState, 
   loadTournamentState, 
@@ -46,10 +44,9 @@ import {
   exportData,
   importData
 } from './utils/storage';
+import { t, getLanguage } from './localization';
 
 const App = () => {
-  // Получаем переводы для текущего языка
-  const t = useMemo(() => getTranslations(), []);
   // --- Основные состояния ---
   const [screen, setScreen] = useState('input');
   const [players, setPlayers] = useState([]);
@@ -92,7 +89,7 @@ const App = () => {
     const handleBeforeUnload = (e) => {
       // Проверяем, есть ли активный турнир
       if (players.length > 0 || teams.length > 0 || games.length > 0) {
-        const confirmationMessage = 'У вас есть незавершённый турнир. Если вы покинете страницу, все несохранённые данные будут потеряны. Продолжить?';
+        const confirmationMessage = t('resetTournament.beforeUnloadMessage');
         e.preventDefault();
         e.returnValue = confirmationMessage;
         return confirmationMessage;
@@ -252,10 +249,11 @@ const App = () => {
     
     // Показать уведомление
     showNotification(
-      'Турнир создан', 
-      `Команды сформированы и расписание готово (${schedule.length} игр). Формат: ${
-        newFormat === 'full' ? 'полные команды' : newFormat === 'triples' ? 'тройки' : 'двойки'
-      }`,
+      t('notifications.tournamentCreated'), 
+      t('notifications.teamsFormedMessage', { 
+        games: schedule.length, 
+        format: t(`tournamentFormat.${newFormat}`) 
+      }),
       'success'
     );
   }, [settings, showNotification]);
@@ -310,7 +308,7 @@ const App = () => {
       setScreen('input');
       setShowResetConfirm(false);
       
-      showNotification('Новый турнир', 'Прошлый турнир очищен, можно начинать новый.', 'info');
+      showNotification(t('notifications.newTournament'), t('notifications.newTournamentMessage'), 'info');
     }
   }, [pendingPlayersList, startNewTournament, showNotification]);
 
@@ -331,8 +329,12 @@ const App = () => {
         setScreen('game');
         
         showNotification(
-          'Игра начата', 
-          `Раунд ${round} начинается. Команда ${gameInfo.gameTeams[0].name} против ${gameInfo.gameTeams[1].name}`, 
+          t('notifications.gameStarted'), 
+          t('notifications.gameStartedMessage', { 
+            round: round, 
+            team1: gameInfo.gameTeams[0].name,
+            team2: gameInfo.gameTeams[1].name 
+          }), 
           'info'
         );
       }
@@ -455,8 +457,8 @@ const App = () => {
       });
       setScreen('results');
       showNotification(
-        'Турнир завершен', 
-        'Все игры сыграны! Проверьте итоговую таблицу результатов.', 
+        t('notifications.tournamentFinished'), 
+        t('notifications.tournamentFinishedMessage'), 
         'success'
       );
     } else {
@@ -472,8 +474,12 @@ const App = () => {
       // Переходим к списку игр после завершения матча
       setScreen('games');
       showNotification(
-        'Игра завершена', 
-        `Раунд ${currentRound + 1} завершён со счётом ${score1}:${score2}.`, 
+        t('notifications.gameFinished'), 
+        t('notifications.gameFinishedMessage', { 
+          round: currentRound + 1, 
+          score1: score1,
+          score2: score2
+        }), 
         'info'
       );
     }
@@ -484,7 +490,11 @@ const App = () => {
     setSettings(newSettings);
     localStorage.setItem('tournamentSettings', JSON.stringify(newSettings));
     setScreen('input');
-    showNotification('Настройки сохранены', 'Изменения настроек применены к турниру.', 'success');
+    showNotification(
+      t('notifications.settingsSaved'), 
+      t('notifications.settingsSavedMessage'), 
+      'success'
+    );
   }, [showNotification]);
 
   // --- Просмотр статистики игрока ---
@@ -497,16 +507,28 @@ const App = () => {
   const handleExportData = useCallback(() => {
     const success = exportData();
     if (success) {
-      showNotification('Экспорт данных', 'Данные успешно экспортированы в файл.', 'success');
+      showNotification(
+        t('notifications.dataExport'), 
+        t('notifications.dataExportSuccess'), 
+        'success'
+      );
     } else {
-      showNotification('Ошибка экспорта', 'Произошла ошибка при экспорте данных.', 'error');
+      showNotification(
+        t('notifications.exportError'), 
+        t('notifications.exportErrorMessage'), 
+        'error'
+      );
     }
   }, [showNotification]);
 
   // --- Импорт данных ---
   const handleImportData = useCallback(() => {
     if (!importFile) {
-      showNotification('Ошибка импорта', 'Файл не выбран.', 'warning');
+      showNotification(
+        t('notifications.importError'), 
+        t('notifications.fileNotSelected'), 
+        'warning'
+      );
       return;
     }
     
@@ -519,14 +541,26 @@ const App = () => {
         const success = importData(jsonData);
         
         if (success) {
-          showNotification('Импорт данных', 'Данные успешно импортированы.', 'success');
+          showNotification(
+            t('notifications.dataImport'), 
+            t('notifications.dataImportSuccess'), 
+            'success'
+          );
           // Перезагрузить страницу для применения импортированных данных
           window.location.reload();
         } else {
-          showNotification('Ошибка импорта', 'Ошибка при импорте данных.', 'error');
+          showNotification(
+            t('notifications.importError'), 
+            t('notifications.importErrorMessage'), 
+            'error'
+          );
         }
       } catch (error) {
-        showNotification('Ошибка импорта', 'Файл содержит неверный формат данных.', 'error');
+        showNotification(
+          t('notifications.importError'), 
+          t('notifications.formatError'), 
+          'error'
+        );
       } finally {
         setIsDataLoading(false);
         setShowDataImport(false);
@@ -535,7 +569,11 @@ const App = () => {
     };
     
     reader.onerror = () => {
-      showNotification('Ошибка импорта', 'Не удалось прочитать файл.', 'error');
+      showNotification(
+        t('notifications.importError'), 
+        t('notifications.readError'), 
+        'error'
+      );
       setIsDataLoading(false);
       setShowDataImport(false);
       setImportFile(null);
@@ -640,21 +678,22 @@ const App = () => {
       {/* Header для мобильных */}
       <header className="md:hidden flex items-center justify-between p-4 bg-gradient-to-r from-[#0B8E8D] to-[#06324F] text-white sticky top-0 z-50 shadow-md">
         <div className="flex items-center">
-          <img src={logo} alt="Volleyball Tournament Logo" className="w-8 h-8 mr-2" />
-          <h1 className="text-xl font-bold">Волейбольный турнир</h1>
+          <FaVolleyballBall className="mr-2" />
+          <h1 className="text-xl font-bold">{t('header.title')}</h1>
         </div>
         <div className="flex items-center gap-3">
+          <LanguageSwitcher className="mr-2" />
           <button 
             onClick={toggleDarkMode}
             className="p-2 rounded-full hover:bg-white/20 transition-colors"
-            aria-label={darkMode ? "Включить светлую тему" : "Включить тёмную тему"}
+            aria-label={darkMode ? t('header.lightTheme') : t('header.darkTheme')}
           >
             {darkMode ? <FaSun /> : <FaMoon />}
           </button>
           <button 
             onClick={() => setMobileMenuOpen(prev => !prev)}
             className="p-2 rounded-full hover:bg-white/20 transition-colors"
-            aria-label={mobileMenuOpen ? "Закрыть меню" : "Открыть меню"}
+            aria-label={mobileMenuOpen ? t('common.close') : t('header.menu')}
           >
             {mobileMenuOpen ? <FaTimes /> : <FaBars />}
           </button>
@@ -664,24 +703,23 @@ const App = () => {
       {/* Мобильное меню */}
       {mobileMenuOpen && (
         <div className="md:hidden fixed inset-0 z-40 bg-black/50 backdrop-blur-sm" onClick={() => setMobileMenuOpen(false)}>
-        <div 
-          className={`w-72 h-full ${themeClasses.sidebar} shadow-xl transform transition-transform p-4`}
-          onClick={e => e.stopPropagation()}
-        >
-          <div className="mb-6 border-b border-[#0B8E8D]/20 pb-4">
-            <div className="flex items-center mb-4">
-              <img src={logo} alt="Volleyball Tournament Logo" className="w-12 h-12 mr-2 drop-shadow-md animate-pulse-slow" />
-              <h2 className="text-xl font-bold">{t.appName}</h2>
-            </div>
-            <div className="flex flex-col gap-2">
-              <button 
-                onClick={toggleDarkMode}
-                className={`flex-1 flex items-center justify-center p-2 rounded-md ${darkMode ? 'bg-[#0B8E8D]' : 'bg-gray-200 text-gray-800'} transition-colors`}
-              >
-                {darkMode ? <FaSun className="mr-2" /> : <FaMoon className="mr-2" />}
-                {darkMode ? t.lightTheme : t.darkTheme}
-                </button>
-                <LanguageSwitcher />
+          <div 
+            className={`w-72 h-full ${themeClasses.sidebar} shadow-xl transform transition-transform p-4`}
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="mb-6 border-b border-[#0B8E8D]/20 pb-4">
+              <div className="flex items-center mb-4">
+                <FaVolleyballBall className="mr-2 text-[#0B8E8D]" />
+                <h2 className="text-xl font-bold">{t('header.title')}</h2>
+              </div>
+              <div className="flex gap-2">
+                <button 
+                  onClick={toggleDarkMode}
+                  className={`flex-1 flex items-center justify-center p-2 rounded-md ${darkMode ? 'bg-[#0B8E8D]' : 'bg-gray-200 text-gray-800'} transition-colors`}
+                >
+                  {darkMode ? <FaSun className="mr-2" /> : <FaMoon className="mr-2" />}
+                  {darkMode ? t('header.lightTheme') : t('header.darkTheme')}
+                  </button>
               </div>
             </div>
             <div className="space-y-2 overflow-y-auto max-h-[calc(100vh-200px)]">
@@ -692,7 +730,7 @@ const App = () => {
                 }}
                 className={`flex items-center w-full text-left p-3 rounded-lg transition-all duration-200 ${isMenuActive('input') ? themeClasses.activeMenu : themeClasses.hoverMenu}`}
               >
-                <FaVolleyballBall className="mr-3" /> {t.newTournament}
+                <FaVolleyballBall className="mr-3" /> {t('header.newTournament')}
               </button>
               <button
                 onClick={() => {
@@ -701,7 +739,7 @@ const App = () => {
                 }}
                 className={`flex items-center w-full text-left p-3 rounded-lg transition-all duration-200 ${isMenuActive('games') ? themeClasses.activeMenu : themeClasses.hoverMenu}`}
               >
-                <FaUsers className="mr-3" /> {t.games}
+                <FaUsers className="mr-3" /> {t('header.games')}
               </button>
               <button
                 onClick={() => {
@@ -710,7 +748,7 @@ const App = () => {
                 }}
                 className={`flex items-center w-full text-left p-3 rounded-lg transition-all duration-200 ${isMenuActive('results') ? themeClasses.activeMenu : themeClasses.hoverMenu}`}
               >
-                <FaTrophy className="mr-3" /> {t.results}
+                <FaTrophy className="mr-3" /> {t('header.results')}
               </button>
               <button
                 onClick={() => {
@@ -719,7 +757,7 @@ const App = () => {
                 }}
                 className={`flex items-center w-full text-left p-3 rounded-lg transition-all duration-200 ${isMenuActive('history') ? themeClasses.activeMenu : themeClasses.hoverMenu}`}
               >
-                <FaHistory className="mr-3" /> {t.history}
+                <FaHistory className="mr-3" /> {t('header.history')}
               </button>
               <div className="pt-2 border-t border-[#0B8E8D]/10 mt-2"></div>
               <button
@@ -729,7 +767,7 @@ const App = () => {
                 }}
                 className={`flex items-center w-full text-left p-3 rounded-lg transition-all duration-200 ${isMenuActive('players') || isMenuActive('playerStats') ? themeClasses.activeMenu : themeClasses.hoverMenu}`}
               >
-                <FaChartBar className="mr-3" /> {t.playerRating}
+                <FaChartBar className="mr-3" /> {t('header.playerRatings')}
               </button>
               <button
                 onClick={() => {
@@ -738,7 +776,7 @@ const App = () => {
                 }}
                 className={`flex items-center w-full text-left p-3 rounded-lg transition-all duration-200 ${isMenuActive('settings') ? themeClasses.activeMenu : themeClasses.hoverMenu}`}
               >
-                <FaCog className="mr-3" /> {t.settings}
+                <FaCog className="mr-3" /> {t('header.settings')}
               </button>
               <button
                 onClick={() => {
@@ -747,7 +785,7 @@ const App = () => {
                 }}
                 className={`flex items-center w-full text-left p-3 rounded-lg transition-all duration-200 ${isMenuActive('data') ? themeClasses.activeMenu : themeClasses.hoverMenu}`}
               >
-                <FaDownload className="mr-3" /> {t.dataManagement}
+                <FaDownload className="mr-3" /> {t('header.dataManagement')}
               </button>
               <button
                 onClick={() => {
@@ -756,7 +794,7 @@ const App = () => {
                 }}
                 className={`flex items-center w-full text-left p-3 rounded-lg transition-all duration-200 hover:bg-[#FDD80F]/10`}
               >
-                <FaGlobe className="mr-3 text-[#FDD80F]" /> {t.rules}
+                <FaGlobe className="mr-3 text-[#FDD80F]" /> {t('header.rules')}
               </button>
             </div>
           </div>
@@ -765,17 +803,17 @@ const App = () => {
 
       {/* Sidebar для desktop */}
       <aside className={`hidden md:block md:w-64 ${themeClasses.sidebar} shadow-md md:h-screen md:sticky md:top-0 z-40 md:border-r shrink-0 transition-colors duration-300`}>
-        <div className="p-4 border-b border-[#0B8E8D]/20 flex justify-between items-center">
+        <div className="p-4 border-b border-[#0B8E8D]/20 flex flex-col gap-3">
           <h1 className={`text-xl font-bold ${themeClasses.title} flex items-center`}>
-            <img src={logo} alt="Volleyball Tournament Logo" className="w-10 h-10 mr-2 drop-shadow-md" /> {t.appName}
+            <FaVolleyballBall className="mr-2 text-[#0B8E8D]" /> {t('header.title')}
           </h1>
-          <div className="flex items-center gap-2">
+          <div className="flex justify-between items-center">
             <LanguageSwitcher />
             <button 
               onClick={toggleDarkMode}
               className={`p-2 rounded-full ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-200'} transition-colors`}
-              title={darkMode ? t.lightTheme : t.darkTheme}
-              aria-label={darkMode ? t.lightTheme : t.darkTheme}
+              title={darkMode ? t('header.lightTheme') : t('header.darkTheme')}
+              aria-label={darkMode ? t('header.lightTheme') : t('header.darkTheme')}
             >
               {darkMode ? <FaSun className="text-yellow-300" /> : <FaMoon className="text-gray-600" />}
             </button>
@@ -786,25 +824,25 @@ const App = () => {
             onClick={handleNewTournament}
             className={`flex items-center w-full text-left p-3 rounded-lg transition-all duration-200 ${isMenuActive('input') ? themeClasses.activeMenu : themeClasses.hoverMenu}`}
           >
-            <FaVolleyballBall className="mr-3" /> Новый турнир
+            <FaVolleyballBall className="mr-3" /> {t('header.newTournament')}
           </button>
           <button
             onClick={() => setScreen('games')}
             className={`flex items-center w-full text-left p-3 rounded-lg transition-all duration-200 ${isMenuActive('games') ? themeClasses.activeMenu : themeClasses.hoverMenu}`}
           >
-            <FaUsers className="mr-3" /> Игры
+            <FaUsers className="mr-3" /> {t('header.games')}
           </button>
           <button
             onClick={() => setScreen('results')}
             className={`flex items-center w-full text-left p-3 rounded-lg transition-all duration-200 ${isMenuActive('results') ? themeClasses.activeMenu : themeClasses.hoverMenu}`}
           >
-            <FaTrophy className="mr-3" /> Результаты
+            <FaTrophy className="mr-3" /> {t('header.results')}
           </button>
           <button
             onClick={() => setScreen('history')}
             className={`flex items-center w-full text-left p-3 rounded-lg transition-all duration-200 ${isMenuActive('history') ? themeClasses.activeMenu : themeClasses.hoverMenu}`}
           >
-            <FaHistory className="mr-3" /> История
+            <FaHistory className="mr-3" /> {t('header.history')}
           </button>
           
           <div className="pt-2 border-t border-[#0B8E8D]/10 mt-2"></div>
@@ -813,25 +851,25 @@ const App = () => {
             onClick={() => setScreen('players')}
             className={`flex items-center w-full text-left p-3 rounded-lg transition-all duration-200 ${isMenuActive('players') || isMenuActive('playerStats') ? themeClasses.activeMenu : themeClasses.hoverMenu}`}
           >
-            <FaChartBar className="mr-3" /> Рейтинг игроков
+            <FaChartBar className="mr-3" /> {t('header.playerRatings')}
           </button>
           <button
             onClick={() => setScreen('settings')}
             className={`flex items-center w-full text-left p-3 rounded-lg transition-all duration-200 ${isMenuActive('settings') ? themeClasses.activeMenu : themeClasses.hoverMenu}`}
           >
-            <FaCog className="mr-3" /> Настройки
+            <FaCog className="mr-3" /> {t('header.settings')}
           </button>
           <button
             onClick={() => setScreen('data')}
             className={`flex items-center w-full text-left p-3 rounded-lg transition-all duration-200 ${isMenuActive('data') ? themeClasses.activeMenu : themeClasses.hoverMenu}`}
           >
-            <FaDownload className="mr-3" /> Управление данными
+            <FaDownload className="mr-3" /> {t('header.dataManagement')}
           </button>
           <button
             onClick={() => setShowRules(true)}
             className="flex items-center w-full text-left p-3 rounded-lg transition-all duration-200 hover:bg-[#FDD80F]/10 text-[#FDD80F]"
           >
-            <FaGlobe className="mr-3" /> {t.rules}
+            <FaGlobe className="mr-3" /> {t('header.rules')}
           </button>
         </div>
       </aside>
@@ -847,14 +885,14 @@ const App = () => {
           <div className="w-full max-w-lg overflow-hidden bg-white rounded-xl shadow-xl">
             <div className="modal-header">
               <div className="flex justify-between items-center">
-                <h2 className="text-2xl font-bold">Импорт данных</h2>
+                <h2 className="text-2xl font-bold">{t('importModal.title')}</h2>
                 <button onClick={() => setShowDataImport(false)} className="text-white hover:text-accent transition-colors duration-150 text-3xl leading-none">
                   ×
                 </button>
               </div>
             </div>
             <div className="modal-body">
-              <p className="mb-4">Выберите файл JSON для импорта:</p>
+              <p className="mb-4">{t('importModal.selectFile')}</p>
               <input 
                 type="file" 
                 accept=".json" 
@@ -866,7 +904,7 @@ const App = () => {
                   onClick={() => setShowDataImport(false)}
                   className="py-2 px-4 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300"
                 >
-                  Отмена
+                  {t('common.cancel')}
                 </button>
                 <button
                   onClick={handleImportData}
@@ -875,11 +913,11 @@ const App = () => {
                 >
                   {isDataLoading ? (
                     <>
-                      <FaSyncAlt className="animate-spin mr-2" /> Импорт...
+                      <FaSyncAlt className="animate-spin mr-2" /> {t('importModal.importing')}
                     </>
                   ) : (
                     <>
-                      <FaDownload className="mr-2" /> Импортировать
+                      <FaDownload className="mr-2" /> {t('importModal.import')}
                     </>
                   )}
                 </button>
@@ -895,7 +933,7 @@ const App = () => {
           <div className="w-full max-w-md overflow-hidden bg-white rounded-xl shadow-xl">
             <div className="modal-header">
               <div className="flex justify-between items-center">
-                <h2 className="text-2xl font-bold">Сбросить текущий турнир?</h2>
+                <h2 className="text-2xl font-bold">{t('resetTournament.title')}</h2>
                 <button 
                   onClick={cancelResetTournament} 
                   className="text-white hover:text-accent transition-colors duration-150 text-3xl leading-none"
@@ -905,19 +943,19 @@ const App = () => {
               </div>
             </div>
             <div className="modal-body">
-              <p className="mb-4">У вас уже запущен турнир. Все данные будут потеряны! Вы уверены, что хотите сбросить его {pendingPlayersList ? "и начать новый" : ""}?</p>
+              <p className="mb-4">{t('resetTournament.message')} {pendingPlayersList ? t('resetTournament.andStartNew') : ""}?</p>
               <div className="flex justify-end gap-3">
                 <button
                   onClick={cancelResetTournament}
                   className="py-2 px-4 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300"
                 >
-                  Отмена
+                  {t('resetTournament.cancel')}
                 </button>
                 <button
                   onClick={pendingPlayersList ? () => startNewTournament(pendingPlayersList) : confirmResetTournament}
                   className="py-2 px-4 bg-red-600 text-white rounded-lg hover:bg-red-700"
                 >
-                  {pendingPlayersList ? "Сбросить и начать новый" : "Сбросить турнир"}
+                  {pendingPlayersList ? t('resetTournament.resetAndStart') : t('resetTournament.reset')}
                 </button>
               </div>
             </div>
@@ -931,7 +969,7 @@ const App = () => {
           <div className="w-full max-w-4xl max-h-[90vh] overflow-hidden bg-white rounded-xl shadow-xl">
             <div className="bg-gradient-to-r from-darkBlue to-cyan text-white p-6 rounded-t-xl">
               <div className="flex justify-between items-center">
-                <h2 className="text-2xl font-bold">Правила турнира</h2>
+                <h2 className="text-2xl font-bold">{t('rules.title')}</h2>
                 <button onClick={() => setShowRules(false)} className="text-white hover:text-accent transition-colors duration-150 text-3xl leading-none">
                   ×
                 </button>
@@ -939,52 +977,52 @@ const App = () => {
             </div>
             <div className="p-6 max-h-[70vh] overflow-y-auto bg-white rounded-b-xl">
               <div className="text-darkBlue">
-                <h3 className="text-xl font-bold mb-3">Основные принципы турнира</h3>
+                <h3 className="text-xl font-bold mb-3">{t('rules.basicPrinciples')}</h3>
                 <ul className="list-disc pl-5 mb-5 space-y-2">
-                  <li><span className="font-semibold">Гибкость формата:</span> Поддержка разных форматов команд — полноценные команды (6–7 человек), тройки или двойки.</li>
-                  <li><span className="font-semibold">Рандомизация составов:</span> Составы меняются перед каждым раундом для разнообразия и баланса.</li>
-                  <li><span className="font-semibold">Справедливость:</span> Равное игровое время для всех участников.</li>
-                  <li><span className="font-semibold">Прозрачность:</span> Доступная история результатов и статистика.</li>
+                  <li><span className="font-semibold">{t('rules.flexibility')}</span> {t('rules.flexibilityDesc')}</li>
+                  <li><span className="font-semibold">{t('rules.randomization')}</span> {t('rules.randomizationDesc')}</li>
+                  <li><span className="font-semibold">{t('rules.fairness')}</span> {t('rules.fairnessDesc')}</li>
+                  <li><span className="font-semibold">{t('rules.transparency')}</span> {t('rules.transparencyDesc')}</li>
                 </ul>
                 
-                <h3 className="text-xl font-bold mb-3">Форматы турнира</h3>
+                <h3 className="text-xl font-bold mb-3">{t('rules.formats')}</h3>
                 <ul className="list-disc pl-5 mb-5 space-y-3">
                   <li>
-                    <span className="font-semibold">Полноценные команды (12–14 участников):</span>
+                    <span className="font-semibold">{t('rules.fullTeamsFormat')}</span>
                     <ul className="list-circle pl-5 mt-1 space-y-1">
-                      <li>Две команды по 6–7 человек</li>
-                      <li>Игра до 25 очков с минимальной разницей в 2 очка</li>
+                      <li>{t('rules.fullTeamsDesc1')}</li>
+                      <li>{t('rules.fullTeamsDesc2')}</li>
                     </ul>
                   </li>
                   <li>
-                    <span className="font-semibold">Формат троек (15 или 18 участников):</span>
+                    <span className="font-semibold">{t('rules.triplesFormat')}</span>
                     <ul className="list-circle pl-5 mt-1 space-y-1">
-                      <li>5–6 троек (по 3 человека)</li>
-                      <li>Игра до 15 очков</li>
-                      <li>Одна тройка отдыхает в каждом раунде</li>
+                      <li>{t('rules.triplesDesc1')}</li>
+                      <li>{t('rules.triplesDesc2')}</li>
+                      <li>{t('rules.triplesDesc3')}</li>
                     </ul>
                   </li>
                   <li>
-                    <span className="font-semibold">Формат двоек (16–17 участников):</span>
+                    <span className="font-semibold">{t('rules.doublesFormat')}</span>
                     <ul className="list-circle pl-5 mt-1 space-y-1">
-                      <li>8 двоек (по 2 человека)</li>
-                      <li>10-минутные матчи до 25 очков с разницей в 2 очка</li>
-                      <li>Две двойки отдыхают в каждом раунде</li>
+                      <li>{t('rules.doublesDesc1')}</li>
+                      <li>{t('rules.doublesDesc2')}</li>
+                      <li>{t('rules.doublesDesc3')}</li>
                     </ul>
                   </li>
                 </ul>
                 
-                <h3 className="text-xl font-bold mb-3">Подсчёт очков</h3>
-                <p className="mb-2">Очки начисляются по единой системе:</p>
+                <h3 className="text-xl font-bold mb-3">{t('rules.scoring')}</h3>
+                <p className="mb-2">{t('rules.scoringDesc')}</p>
                 <ul className="list-disc pl-5 mb-5 space-y-1">
-                  <li>3 очка: за победу</li>
-                  <li>2 очка: за поражение, если команда набрала 10 или более очков</li>
-                  <li>1 очко: за поражение, если команда набрала менее 10 очков</li>
+                  <li>{t('rules.forWin')}</li>
+                  <li>{t('rules.forLoseGood')}</li>
+                  <li>{t('rules.forLoseBad')}</li>
                 </ul>
               </div>
               <div className="mt-6 flex justify-end">
                 <button onClick={() => setShowRules(false)} className="px-4 py-2 bg-gradient-to-r from-[#0B8E8D] to-[#06324F] text-white rounded-lg hover:opacity-90 transition-opacity">
-                  Закрыть
+                  {t('rules.close')}
                 </button>
               </div>
             </div>

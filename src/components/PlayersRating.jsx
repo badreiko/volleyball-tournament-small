@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { FaTrophy, FaSearch, FaUser, FaStar, FaGamepad, FaSort, FaSortUp, FaSortDown } from 'react-icons/fa';
 import { getPlayerRatings } from '../utils/storage';
+import { t } from '../localization';
 
 const PlayersRating = ({ onViewPlayerStats }) => {
   const [playersData, setPlayersData] = useState([]);
@@ -66,7 +67,7 @@ const PlayersRating = ({ onViewPlayerStats }) => {
   if (loading) {
     return (
       <div className="p-4 flex justify-center items-center h-64">
-        <div className="animate-pulse text-cyan text-xl">Загрузка рейтингов...</div>
+        <div className="animate-pulse text-cyan text-xl">{t('common.loading')}</div>
       </div>
     );
   }
@@ -74,7 +75,7 @@ const PlayersRating = ({ onViewPlayerStats }) => {
   return (
     <div className="p-4 md:p-6">
       <h2 className="text-2xl font-bold text-darkBlue mb-6 flex items-center">
-        <FaTrophy className="mr-3 text-cyan" /> Рейтинг игроков
+        <FaTrophy className="mr-3 text-cyan" /> {t('playersRating.title')}
       </h2>
 
       {/* Поиск */}
@@ -88,7 +89,7 @@ const PlayersRating = ({ onViewPlayerStats }) => {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="input-field pl-10"
-            placeholder="Поиск игрока..."
+            placeholder={t('playersRating.searchPlaceholder')}
           />
         </div>
       </div>
@@ -104,7 +105,7 @@ const PlayersRating = ({ onViewPlayerStats }) => {
                   onClick={() => handleSort('name')}
                 >
                   <div className="flex items-center">
-                    Игрок {getSortIcon('name')}
+                    {t('playersRating.player')} {getSortIcon('name')}
                   </div>
                 </th>
                 <th 
@@ -112,7 +113,7 @@ const PlayersRating = ({ onViewPlayerStats }) => {
                   onClick={() => handleSort('rating')}
                 >
                   <div className="flex items-center">
-                    <FaStar className="mr-1" /> Рейтинг {getSortIcon('rating')}
+                    <FaStar className="mr-1" /> {t('playersRating.rating')} {getSortIcon('rating')}
                   </div>
                 </th>
                 <th 
@@ -120,7 +121,7 @@ const PlayersRating = ({ onViewPlayerStats }) => {
                   onClick={() => handleSort('totalGames')}
                 >
                   <div className="flex items-center">
-                    <FaGamepad className="mr-1" /> Игры {getSortIcon('totalGames')}
+                    <FaGamepad className="mr-1" /> {t('playersRating.games')} {getSortIcon('totalGames')}
                   </div>
                 </th>
                 <th 
@@ -128,7 +129,7 @@ const PlayersRating = ({ onViewPlayerStats }) => {
                   onClick={() => handleSort('totalWins')}
                 >
                   <div className="flex items-center">
-                    <FaTrophy className="mr-1" /> Победы {getSortIcon('totalWins')}
+                    <FaTrophy className="mr-1" /> {t('playersRating.wins')} {getSortIcon('totalWins')}
                   </div>
                 </th>
                 <th 
@@ -136,10 +137,10 @@ const PlayersRating = ({ onViewPlayerStats }) => {
                   onClick={() => handleSort('winRate')}
                 >
                   <div className="flex items-center">
-                    WR% {getSortIcon('winRate')}
+                    {t('playersRating.winRate')} {getSortIcon('winRate')}
                   </div>
                 </th>
-                <th className="p-3 text-center">Действия</th>
+                <th className="p-3 text-center">{t('playersRating.actions')}</th>
               </tr>
             </thead>
             <tbody>
@@ -170,7 +171,7 @@ const PlayersRating = ({ onViewPlayerStats }) => {
                     <button
                       onClick={() => onViewPlayerStats(player.name)}
                       className="inline-flex items-center justify-center p-2 bg-cyan/10 text-cyan rounded-full hover:bg-cyan/20 transition-colors"
-                      title="Подробная статистика"
+                      title={t('playersRating.detailedStats')}
                     >
                       <FaUser />
                     </button>
@@ -182,8 +183,8 @@ const PlayersRating = ({ onViewPlayerStats }) => {
         </div>
       ) : (
         <div className="bg-white p-8 rounded-lg shadow text-center">
-          <p className="text-darkBlue text-lg">Ещё нет данных о рейтингах игроков</p>
-          <p className="text-darkBlue/60 mt-2">Проведите несколько турниров для формирования рейтинга</p>
+          <p className="text-darkBlue text-lg">{t('playersRating.noRatings')}</p>
+          <p className="text-darkBlue/60 mt-2">{t('playersRating.noRatingsMessage')}</p>
         </div>
       )}
     </div>

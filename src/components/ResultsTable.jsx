@@ -1,20 +1,22 @@
+import { t } from '../localization';
+
 const ResultsTable = ({ results }) => {
   const sortedResults = [...results].sort((a, b) => b.points - a.points);
 
   return (
     <div className="min-h-screen bg-darkPurple p-4">
       <div className="card mx-auto max-w-3xl">
-        <h2 className="text-xl font-bold text-darkBlue mb-4">Итоговые результаты</h2>
+        <h2 className="text-xl font-bold text-darkBlue mb-4">{t('resultsTable.title')}</h2>
         {sortedResults.length === 0 ? (
-          <p className="text-darkBlue">Пока нет результатов.</p>
+          <p className="text-darkBlue">{t('resultsTable.noResults')}</p>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left">
               <thead>
                 <tr className="border-b border-darkBlue">
-                  <th className="p-2 text-darkBlue">Место</th>
-                  <th className="p-2 text-darkBlue">Команда</th>
-                  <th className="p-2 text-darkBlue">Очки</th>
+                  <th className="p-2 text-darkBlue">{t('resultsTable.place')}</th>
+                  <th className="p-2 text-darkBlue">{t('resultsTable.team')}</th>
+                  <th className="p-2 text-darkBlue">{t('resultsTable.points')}</th>
                 </tr>
               </thead>
               <tbody>

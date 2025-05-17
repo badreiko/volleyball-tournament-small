@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { FaCog, FaToggleOn, FaToggleOff, FaArrowLeft, FaSave } from 'react-icons/fa';
+import { t } from '../localization';
 
 const TournamentSettings = ({ onBack, onSave }) => {
   const [settings, setSettings] = useState({
@@ -59,26 +60,26 @@ const TournamentSettings = ({ onBack, onSave }) => {
   return (
     <div className="p-4 md:p-6">
       <button onClick={onBack} className="mb-4 flex items-center text-darkBlue hover:text-cyan transition-colors">
-        <FaArrowLeft className="mr-2" /> Назад
+        <FaArrowLeft className="mr-2" /> {t('common.back')}
       </button>
       
       <div className="card mx-auto max-w-4xl fade-in">
         <h2 className="text-2xl font-bold text-darkBlue mb-6 flex items-center">
-          <FaCog className="mr-3 text-cyan" /> Настройки турнира
+          <FaCog className="mr-3 text-cyan" /> {t('settings.title')}
         </h2>
         
         <div className="space-y-8">
           {/* Основные настройки */}
           <div>
             <h3 className="text-lg font-semibold text-darkBlue mb-4 border-b border-darkBlue/20 pb-2">
-              Основные настройки
+              {t('settings.basicSettings')}
             </h3>
             
             <div className="space-y-4">
               <div className="flex justify-between items-center p-3 bg-gradient-to-r from-cyan/10 to-darkBlue/5 rounded-lg">
                 <div>
-                  <h4 className="font-medium text-darkBlue">Использовать балансировку команд</h4>
-                  <p className="text-sm text-darkBlue/70">Команды будут формироваться с учётом рейтинга игроков</p>
+                  <h4 className="font-medium text-darkBlue">{t('settings.useTeamBalancing')}</h4>
+                  <p className="text-sm text-darkBlue/70">{t('settings.balancingDescription')}</p>
                 </div>
                 <button 
                   onClick={() => handleToggle('useBalancing')}
@@ -90,8 +91,8 @@ const TournamentSettings = ({ onBack, onSave }) => {
               
               <div className="flex justify-between items-center p-3 bg-gradient-to-r from-cyan/10 to-darkBlue/5 rounded-lg">
                 <div>
-                  <h4 className="font-medium text-darkBlue">Показывать рейтинг команд</h4>
-                  <p className="text-sm text-darkBlue/70">Отображать средний рейтинг команд во время игры</p>
+                  <h4 className="font-medium text-darkBlue">{t('settings.showTeamRatings')}</h4>
+                  <p className="text-sm text-darkBlue/70">{t('settings.ratingsDescription')}</p>
                 </div>
                 <button 
                   onClick={() => handleToggle('showTeamRatings')}
@@ -103,8 +104,8 @@ const TournamentSettings = ({ onBack, onSave }) => {
               
               <div className="flex justify-between items-center p-3 bg-gradient-to-r from-cyan/10 to-darkBlue/5 rounded-lg">
                 <div>
-                  <h4 className="font-medium text-darkBlue">Показывать прогнозы</h4>
-                  <p className="text-sm text-darkBlue/70">Отображать вероятность победы команд перед игрой</p>
+                  <h4 className="font-medium text-darkBlue">{t('settings.showPredictions')}</h4>
+                  <p className="text-sm text-darkBlue/70">{t('settings.predictionsDescription')}</p>
                 </div>
                 <button 
                   onClick={() => handleToggle('showPredictions')}
@@ -116,8 +117,8 @@ const TournamentSettings = ({ onBack, onSave }) => {
               
               <div className="flex justify-between items-center p-3 bg-gradient-to-r from-cyan/10 to-darkBlue/5 rounded-lg">
                 <div>
-                  <h4 className="font-medium text-darkBlue">Минимальная разница в очках для победы</h4>
-                  <p className="text-sm text-darkBlue/70">Необходимое преимущество для завершения игры</p>
+                  <h4 className="font-medium text-darkBlue">{t('settings.minPointDifference')}</h4>
+                  <p className="text-sm text-darkBlue/70">{t('settings.diffDescription')}</p>
                 </div>
                 <div className="w-20">
                   <input 
@@ -133,8 +134,8 @@ const TournamentSettings = ({ onBack, onSave }) => {
               
               <div className="flex justify-between items-center p-3 bg-gradient-to-r from-cyan/10 to-darkBlue/5 rounded-lg">
                 <div>
-                  <h4 className="font-medium text-darkBlue">Длительность раунда для двоек (минут)</h4>
-                  <p className="text-sm text-darkBlue/70">Время на один раунд в формате двоек</p>
+                  <h4 className="font-medium text-darkBlue">{t('settings.roundDuration')}</h4>
+                  <p className="text-sm text-darkBlue/70">{t('settings.durationDescription')}</p>
                 </div>
                 <div className="w-20">
                   <input 
@@ -153,14 +154,14 @@ const TournamentSettings = ({ onBack, onSave }) => {
           {/* Настройки счета для форматов */}
           <div>
             <h3 className="text-lg font-semibold text-darkBlue mb-4 border-b border-darkBlue/20 pb-2">
-              Настройки игры по форматам
+              {t('settings.gameSettingsByFormat')}
             </h3>
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="p-3 bg-gradient-to-r from-cyan/10 to-darkBlue/5 rounded-lg">
-                <h4 className="font-medium text-darkBlue mb-2">Полные команды</h4>
+                <h4 className="font-medium text-darkBlue mb-2">{t('settings.fullTeams')}</h4>
                 <div className="flex items-center mb-2">
-                  <span className="text-sm text-darkBlue/70 mr-2">Макс. счёт:</span>
+                  <span className="text-sm text-darkBlue/70 mr-2">{t('settings.maxScore')}</span>
                   <input 
                     type="number" 
                     min="15" 
@@ -170,13 +171,13 @@ const TournamentSettings = ({ onBack, onSave }) => {
                     className="w-16 p-2 border border-darkBlue/30 rounded-lg bg-white text-darkBlue text-center"
                   />
                 </div>
-                <p className="text-xs text-darkBlue/60">Формат для 12-14 игроков</p>
+                <p className="text-xs text-darkBlue/60">{t('settings.formatDescription', { count: '12-14' })}</p>
               </div>
               
               <div className="p-3 bg-gradient-to-r from-cyan/10 to-darkBlue/5 rounded-lg">
-                <h4 className="font-medium text-darkBlue mb-2">Тройки</h4>
+                <h4 className="font-medium text-darkBlue mb-2">{t('settings.triples')}</h4>
                 <div className="flex items-center mb-2">
-                  <span className="text-sm text-darkBlue/70 mr-2">Макс. счёт:</span>
+                  <span className="text-sm text-darkBlue/70 mr-2">{t('settings.maxScore')}</span>
                   <input 
                     type="number" 
                     min="15" 
@@ -186,13 +187,13 @@ const TournamentSettings = ({ onBack, onSave }) => {
                     className="w-16 p-2 border border-darkBlue/30 rounded-lg bg-white text-darkBlue text-center"
                   />
                 </div>
-                <p className="text-xs text-darkBlue/60">Формат для 15 или 18 игроков</p>
+                <p className="text-xs text-darkBlue/60">{t('settings.formatDescription', { count: '15-18' })}</p>
               </div>
               
               <div className="p-3 bg-gradient-to-r from-cyan/10 to-darkBlue/5 rounded-lg">
-                <h4 className="font-medium text-darkBlue mb-2">Двойки</h4>
+                <h4 className="font-medium text-darkBlue mb-2">{t('settings.doubles')}</h4>
                 <div className="flex items-center mb-2">
-                  <span className="text-sm text-darkBlue/70 mr-2">Макс. счёт:</span>
+                  <span className="text-sm text-darkBlue/70 mr-2">{t('settings.maxScore')}</span>
                   <input 
                     type="number" 
                     min="15" 
@@ -202,7 +203,7 @@ const TournamentSettings = ({ onBack, onSave }) => {
                     className="w-16 p-2 border border-darkBlue/30 rounded-lg bg-white text-darkBlue text-center"
                   />
                 </div>
-                <p className="text-xs text-darkBlue/60">Формат для 16-17 игроков</p>
+                <p className="text-xs text-darkBlue/60">{t('settings.formatDescription', { count: '16-17' })}</p>
               </div>
             </div>
           </div>
@@ -210,14 +211,14 @@ const TournamentSettings = ({ onBack, onSave }) => {
           {/* Настройки очков */}
           <div>
             <h3 className="text-lg font-semibold text-darkBlue mb-4 border-b border-darkBlue/20 pb-2">
-              Начисление очков
+              {t('settings.scoringSettings')}
             </h3>
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="p-3 bg-gradient-to-r from-cyan/10 to-darkBlue/5 rounded-lg">
-                <h4 className="font-medium text-darkBlue mb-2">За победу</h4>
+                <h4 className="font-medium text-darkBlue mb-2">{t('settings.forWin')}</h4>
                 <div className="flex items-center">
-                  <span className="text-sm text-darkBlue/70 mr-2">Очки:</span>
+                  <span className="text-sm text-darkBlue/70 mr-2">{t('resultsTable.points')}:</span>
                   <input 
                     type="number" 
                     min="1" 
@@ -230,9 +231,9 @@ const TournamentSettings = ({ onBack, onSave }) => {
               </div>
               
               <div className="p-3 bg-gradient-to-r from-cyan/10 to-darkBlue/5 rounded-lg">
-                <h4 className="font-medium text-darkBlue mb-2">За поражение (10+ очков)</h4>
+                <h4 className="font-medium text-darkBlue mb-2">{t('settings.forLoseGood')}</h4>
                 <div className="flex items-center">
-                  <span className="text-sm text-darkBlue/70 mr-2">Очки:</span>
+                  <span className="text-sm text-darkBlue/70 mr-2">{t('resultsTable.points')}:</span>
                   <input 
                     type="number" 
                     min="0" 
@@ -245,9 +246,9 @@ const TournamentSettings = ({ onBack, onSave }) => {
               </div>
               
               <div className="p-3 bg-gradient-to-r from-cyan/10 to-darkBlue/5 rounded-lg">
-                <h4 className="font-medium text-darkBlue mb-2">За поражение (менее 10 очков)</h4>
+                <h4 className="font-medium text-darkBlue mb-2">{t('settings.forLoseBad')}</h4>
                 <div className="flex items-center">
-                    <span className="text-sm text-darkBlue/70 mr-2">Очки:</span>
+                    <span className="text-sm text-darkBlue/70 mr-2">{t('resultsTable.points')}:</span>
                     <input 
                     type="number" 
                     min="0" 
@@ -263,7 +264,7 @@ const TournamentSettings = ({ onBack, onSave }) => {
           
           <div className="flex justify-end pt-4 border-t border-darkBlue/20">
             <button onClick={handleSave} className="btn btn-accent flex items-center">
-              <FaSave className="mr-2" /> Сохранить настройки
+              <FaSave className="mr-2" /> {t('settings.saveSettings')}
             </button>
           </div>
         </div>
