@@ -1,9 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
-import {
-  FaVolleyballBall,
-  FaCheck,
-  FaUndo,
-  FaChartLine,
+import { 
+  FaVolleyballBall, 
+  FaCheck, 
+  FaUndo, 
+  FaChartLine, 
   FaHandPointUp,
   FaHistory,
   FaExchangeAlt as FaSwitch
@@ -23,8 +23,11 @@ const GameBoard = ({ teams, resting, onGameEnd, settings }) => {
   const [gameFinished, setGameFinished] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [isCourtSwitched, setIsCourtSwitched] = useState(false);
-  const [scoreHistory, setScoreHistory] = useState([]);
   const [showScoreHistory, setShowScoreHistory] = useState(true);
+  
+  // Массивы для хранения последовательности очков каждой команды
+  const [team1ScoringSequence, setTeam1ScoringSequence] = useState([]);
+  const [team2ScoringSequence, setTeam2ScoringSequence] = useState([]);
 
   // Ref для хранения таймера автоматического завершения игры
   const autoFinishTimerRef = useRef(null);
@@ -32,7 +35,7 @@ const GameBoard = ({ teams, resting, onGameEnd, settings }) => {
   // Получаем настройки из пропсов
   const maxScore = settings?.maxScoreRounds?.[teams.length === 2 ? 'full' : 'triples'] || 25;
   const minPointDifference = settings?.minPointDifference || 2;
-
+  
   // Получаем прогноз для текущей игры
   useEffect(() => {
     if (teams && teams.length === 2 && settings?.showPredictions) {
@@ -48,7 +51,7 @@ const GameBoard = ({ teams, resting, onGameEnd, settings }) => {
     }
     return () => clearInterval(interval);
   }, [isTimerRunning, timer]);
-
+  
   // Проверка условий завершения игры
   useEffect(() => {
     const checkGameFinish = () => {
@@ -56,7 +59,7 @@ const GameBoard = ({ teams, resting, onGameEnd, settings }) => {
       if ((score1 >= maxScore || score2 >= maxScore) && Math.abs(score1 - score2) >= minPointDifference) {
         // Устанавливаем флаг завершения игры
         setGameFinished(true);
-
+        
         // Показываем модальное окно через небольшую задержку
         autoFinishTimerRef.current = setTimeout(() => {
           setShowModal(true);
@@ -65,9 +68,9 @@ const GameBoard = ({ teams, resting, onGameEnd, settings }) => {
         setGameFinished(false);
       }
     };
-
+    
     checkGameFinish();
-
+    
     // Очистка таймера при размонтировании
     return () => {
       if (autoFinishTimerRef.current) {
@@ -82,7 +85,7 @@ const GameBoard = ({ teams, resting, onGameEnd, settings }) => {
   const touchEndX = useRef(0);
   const touchEndY = useRef(0);
   const [swipeMode, setSwipeMode] = useState(false);
-
+  
   const handleScoreChange = (team, delta) => {
     const actualTeam = isCourtSwitched ? (team === 1 ? 2 : 1) : team;
     // Если игра завершена, не позволяем менять счет
@@ -91,44 +94,53 @@ const GameBoard = ({ teams, resting, onGameEnd, settings }) => {
       setTimeout(() => setErrorMessage(""), 3000);
       return;
     }
-
+    
     // Проверяем, чтобы счет не стал отрицательным
     if (actualTeam === 1) {
       if (delta < 0 && score1 + delta < 0) return; // Предотвращаем отрицательный счет
+      
+      // Добавляем очко в последовательность для первой команды, если это прибавление
+      if (delta > 0) {
+        setTeam1ScoringSequence(prev => [...prev, score1 + 1]);
+      } else if (delta < 0) {
+        // Удаляем последнее очко при вычитании
+        setTeam1ScoringSequence(prev => prev.slice(0, -1));
+      }
+      
       setScore1((prev) => Math.max(0, prev + delta));
     } else {
       if (delta < 0 && score2 + delta < 0) return; // Предотвращаем отрицательный счет
+      
+      // Добавляем очко в последовательность для второй команды, если это прибавление
+      if (delta > 0) {
+        setTeam2ScoringSequence(prev => [...prev, score2 + 1]);
+      } else if (delta < 0) {
+        // Удаляем последнее очко при вычитании
+        setTeam2ScoringSequence(prev => prev.slice(0, -1));
+      }
+      
       setScore2((prev) => Math.max(0, prev + delta));
     }
-
+    
     // Сбрасываем сообщение об ошибке при изменении счета
     if (errorMessage) {
       setErrorMessage("");
     }
-
-    // Добавляем очко в историю
-    const scoringTeam = actualTeam === 1 ? teams[0].name : teams[1].name;
-    setScoreHistory(prev => [...prev, {
-      team: scoringTeam,
-      score1: actualTeam === 1 ? score1 + delta : score1,
-      score2: actualTeam === 2 ? score2 + delta : score2,
-      isPositive: delta > 0
-    }]);
   };
-
+  
   // Обработчики свайпов для мобильного управления счётом
   const handleTouchStart = (e) => {
     touchStartX.current = e.touches[0].clientX;
     touchStartY.current = e.touches[0].clientY;
   };
-
+  
   const handleTouchEnd = (e, team) => {
     touchEndX.current = e.changedTouches[0].clientX;
     touchEndY.current = e.changedTouches[0].clientY;
-
+    
     const deltaX = touchEndX.current - touchStartX.current;
     const deltaY = touchEndY.current - touchStartY.current;
-
+    
     // Проверяем, что свайп был преимущественно горизонтальным
     if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 50) {
       if (deltaX > 0) {
@@ -149,13 +161,13 @@ const GameBoard = ({ teams, resting, onGameEnd, settings }) => {
     } else {
       // Формируем подробное сообщение об ошибке
       let message = "Игра не может быть завершена: ";
-
+      
       if (score1 < maxScore && score2 < maxScore) {
         message += `необходимо набрать ${maxScore} очков.`;
       } else if (Math.abs(score1 - score2) < minPointDifference) {
         message += `разница в счете должна быть не менее ${minPointDifference} очков.`;
       }
-
+      
       setErrorMessage(message);
       setTimeout(() => setErrorMessage(""), 5000);
     }
@@ -172,10 +184,11 @@ const GameBoard = ({ teams, resting, onGameEnd, settings }) => {
     setIsTimerRunning(false);
     setGameFinished(false);
     setErrorMessage("");
-    setScoreHistory([]);
+    setTeam1ScoringSequence([]);
+    setTeam2ScoringSequence([]);
     setIsCourtSwitched(false);
   };
-
+  
   // Форматирование таймера
   const formatTime = (seconds) => {
     const minutes = Math.floor(seconds / 60);
@@ -183,14 +196,17 @@ const GameBoard = ({ teams, resting, onGameEnd, settings }) => {
     return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
   };
 
-  // Функция для рендеринга истории счета в стиле, похожем на изображение
+  // Рендеринг истории счета в стиле, как на изображении
   const renderScoreHistoryGrid = () => {
-    // Создаем массив чисел от 1 до максимального счета для отображения в сетке
-    const maxDisplayScore = Math.max(25, maxScore + 5);
-    const scoreNumbers = Array.from({ length: maxDisplayScore }, (_, i) => i + 1);
-
+    // Определяем максимальное количество позиций для отображения
+    const maxPositions = Math.max(
+      team1ScoringSequence.length + 5, 
+      team2ScoringSequence.length + 5, 
+      25
+    );
+    
     return (
-      <div className="mt-4 overflow-x-auto bg-teal-50 rounded-lg border border-teal-100">
+      <div className="mt-4 overflow-x-auto bg-teal-700/10 rounded-lg border border-teal-800/20">
         <div className="p-3">
           <div className="flex justify-between mb-2">
             <h3 className="text-lg font-semibold text-darkBlue">
@@ -198,11 +214,10 @@ const GameBoard = ({ teams, resting, onGameEnd, settings }) => {
             </h3>
             <span className="text-sm text-gray-500">Время: {formatTime(timer)}</span>
           </div>
-
+          
           <div className="flex">
             {/* Имена команд */}
             <div className="w-28 shrink-0 mr-2">
-              <div className="h-8"></div> {/* Пустая ячейка для выравнивания с цифрами */}
               <div className="h-8 flex items-center font-semibold text-darkBlue">
                 {isCourtSwitched ? teams[1].name : teams[0].name}:
               </div>
@@ -210,24 +225,26 @@ const GameBoard = ({ teams, resting, onGameEnd, settings }) => {
                 {isCourtSwitched ? teams[0].name : teams[1].name}:
               </div>
             </div>
-
-            {/* Сетка очков */}
+            
+            {/* Сетка последовательности очков */}
             <div className="flex overflow-x-auto">
-              {scoreNumbers.map(num => (
-                <div key={`score-${num}`} className="flex flex-col items-center" style={{ minWidth: '24px' }}>
-                  {/* Ряд цифр вверху */}
-                  <div className="h-8 w-6 flex items-center justify-center font-medium text-gray-700">
-                    {num}
-                  </div>
+              {Array.from({ length: maxPositions }, (_, index) => (
+                <div key={`pos-${index}`} className="flex flex-col" style={{ minWidth: '24px' }}>
                   {/* Ячейки для первой команды */}
-                  <div className={`h-8 w-6 flex items-center justify-center ${score1 >= num ? 'bg-gray-300' : ''
-                    }`}>
-                    {score1 === num && '✓'}
+                  <div className="h-8 w-6 flex items-center justify-center">
+                    {index < team1ScoringSequence.length ? (
+                      <span className="bg-gray-300 w-full h-full flex items-center justify-center">
+                        {team1ScoringSequence[index]}
+                      </span>
+                    ) : null}
                   </div>
                   {/* Ячейки для второй команды */}
-                  <div className={`h-8 w-6 flex items-center justify-center ${score2 >= num ? 'bg-gray-300' : ''
-                    }`}>
-                    {score2 === num && '✓'}
+                  <div className="h-8 w-6 flex items-center justify-center">
+                    {index < team2ScoringSequence.length ? (
+                      <span className="bg-gray-300 w-full h-full flex items-center justify-center">
+                        {team2ScoringSequence[index]}
+                      </span>
+                    ) : null}
                   </div>
                 </div>
               ))}
@@ -254,29 +271,29 @@ const GameBoard = ({ teams, resting, onGameEnd, settings }) => {
             <span className="hidden md:inline">{isCourtSwitched ? 'Вернуть' : 'Поменять местами'}</span>
           </button>
         </div>
-
+        
         {/* Информация о счете и условиях завершения */}
         <div className="mb-4 text-center bg-gradient-to-r from-cyan/10 to-darkBlue/10 p-3 rounded-lg">
           <p className="text-darkBlue">
-            Игра до <span className="font-bold">{maxScore}</span> очков
+            Игра до <span className="font-bold">{maxScore}</span> очков 
             с минимальной разницей в <span className="font-bold">{minPointDifference}</span> очка
           </p>
         </div>
-
+        
         {/* Сообщение об ошибке */}
         {errorMessage && (
           <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-lg text-center animate-pulse">
             {errorMessage}
           </div>
         )}
-
+        
         {/* Уведомление о завершении игры */}
         {gameFinished && !showModal && (
           <div className="mb-4 p-3 bg-green-100 text-green-700 rounded-lg text-center animate-pulse">
             Игра завершена! Нажмите кнопку "Завершить игру" для продолжения.
           </div>
         )}
-
+        
         {/* Прогноз игры */}
         {prediction && settings?.showPredictions && (
           <div className="card mb-4 p-4 bg-gradient-to-r from-cyan/5 to-darkBlue/5">
@@ -319,17 +336,17 @@ const GameBoard = ({ teams, resting, onGameEnd, settings }) => {
             </div>
           </div>
         )}
-
+        
         {/* Переключатель режима свайпов */}
         <div className="mb-4 flex justify-center">
-          <button
+          <button 
             onClick={() => setSwipeMode(!swipeMode)}
             className={`flex items-center px-4 py-2 rounded-full text-sm transition-all ${swipeMode ? 'bg-cyan text-white' : 'bg-gray-200 text-gray-700'}`}
           >
             <MdSwipe className="mr-2" /> {swipeMode ? 'Режим свайпов включен' : 'Включить режим свайпов'}
           </button>
         </div>
-
+        
         <div className="flex flex-col md:flex-row md:gap-6 mb-6">
           {/* Счёт матча - вынесен в отдельную карточку для лучшей эргономики */}
           <div className="p-4 rounded-xl glass-effect mb-4 md:flex-grow">
@@ -341,10 +358,10 @@ const GameBoard = ({ teams, resting, onGameEnd, settings }) => {
                 {isCourtSwitched ? teams[0].name : teams[1].name}
               </h3>
             </div>
-
+            
             <div className="flex justify-between items-center">
               {/* Первая команда - отображаем в зависимости от переключателя */}
-              <div
+              <div 
                 className={`flex-1 ${swipeMode ? 'relative' : ''}`}
                 onTouchStart={swipeMode ? handleTouchStart : undefined}
                 onTouchEnd={swipeMode ? (e) => handleTouchEnd(e, isCourtSwitched ? 2 : 1) : undefined}
@@ -378,10 +395,10 @@ const GameBoard = ({ teams, resting, onGameEnd, settings }) => {
                   )}
                 </div>
               </div>
-
+              
               <div className="text-5xl md:text-7xl font-bold text-darkBlue/40 mx-4">:</div>
-
-              <div
+              
+              <div 
                 className={`flex-1 ${swipeMode ? 'relative' : ''}`}
                 onTouchStart={swipeMode ? handleTouchStart : undefined}
                 onTouchEnd={swipeMode ? (e) => handleTouchEnd(e, isCourtSwitched ? 1 : 2) : undefined}
@@ -416,7 +433,7 @@ const GameBoard = ({ teams, resting, onGameEnd, settings }) => {
                 </div>
               </div>
             </div>
-
+            
             {/* Индикатор свайпа для мобильных устройств */}
             {swipeMode && (
               <div className="mt-6 flex justify-center">
@@ -426,7 +443,7 @@ const GameBoard = ({ teams, resting, onGameEnd, settings }) => {
                 </div>
               </div>
             )}
-
+            
             {/* Таймер игры */}
             <div className="mt-6 flex justify-between items-center">
               <div className="text-sm md:text-base text-darkBlue/70">Время игры:</div>
@@ -440,18 +457,18 @@ const GameBoard = ({ teams, resting, onGameEnd, settings }) => {
             </div>
           </div>
         </div>
-
+        
         <div className="flex flex-col md:flex-row gap-3 mt-6 md:mt-8">
-          <button
-            onClick={() => setShowModal(true)}
+          <button 
+            onClick={() => setShowModal(true)} 
             className={`btn ${gameFinished ? 'btn-cyan' : 'btn-accent'} glow ${gameFinished ? 'animate-pulse' : ''} w-full py-4 md:py-5 md:text-lg`}
           >
             <FaCheck className="text-xl" />
             <span className="text-lg">Завершить игру</span>
           </button>
-
-          <button
-            onClick={resetScores}
+          
+          <button 
+            onClick={resetScores} 
             className="btn bg-gray-200 text-gray-800 hover:bg-gray-300 transition-colors w-full py-3 md:py-5 md:text-lg"
             disabled={gameFinished && showModal}
           >
@@ -472,7 +489,7 @@ const GameBoard = ({ teams, resting, onGameEnd, settings }) => {
               <span className="hidden md:inline ml-2">{showScoreHistory ? 'Скрыть' : 'Показать'}</span>
             </button>
           </div>
-
+          
           {showScoreHistory && renderScoreHistoryGrid()}
         </div>
       </div>
