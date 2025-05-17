@@ -465,7 +465,7 @@ const GameBoard = ({ teams, resting, onGameEnd, settings }) => {
 
               <div className="space-y-4">
                 <button
-                  onClick={handleGameEnd}
+                  onClick={handleEndGame}
                   className="btn btn-accent w-full py-3"
                 >
                   Подтвердить
