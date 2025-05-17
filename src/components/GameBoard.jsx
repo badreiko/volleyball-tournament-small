@@ -92,9 +92,12 @@ const GameBoard = ({ teams, resting, onGameEnd, settings }) => {
       return;
     }
     
+    // Проверяем, чтобы счет не стал отрицательным
     if (actualTeam === 1) {
+      if (delta < 0 && score1 + delta < 0) return; // Предотвращаем отрицательный счет
       setScore1((prev) => Math.max(0, prev + delta));
     } else {
+      if (delta < 0 && score2 + delta < 0) return; // Предотвращаем отрицательный счет
       setScore2((prev) => Math.max(0, prev + delta));
     }
     
@@ -182,8 +185,8 @@ const GameBoard = ({ teams, resting, onGameEnd, settings }) => {
 
   return (
     <div className="p-4 md:p-6">
-      <div className="card max-w-md mx-auto fade-in overflow-hidden">
-      <h2 className="text-2xl font-bold text-darkBlue flex items-center mb-6">
+      <div className="card md:max-w-3xl lg:max-w-4xl mx-auto fade-in overflow-hidden">
+      <h2 className="text-2xl md:text-3xl font-bold text-darkBlue flex items-center mb-6">
         <FaVolleyballBall className="mr-3 text-cyan" /> Текущая игра
       </h2>
       
@@ -262,38 +265,39 @@ const GameBoard = ({ teams, resting, onGameEnd, settings }) => {
         </button>
       </div>
       
-      <div className="flex flex-col mb-6">
+      <div className="flex flex-col md:flex-row md:gap-6 mb-6">
         {/* Кнопка смены сторон */}
         <button
           onClick={handleCourtSwitch}
-          className="mb-4 w-full btn bg-cyan/10 text-cyan hover:bg-cyan/20 transition-all py-3 flex items-center justify-center gap-2"
+          className="mb-4 w-full md:w-auto md:flex-shrink-0 btn bg-cyan/10 text-cyan hover:bg-cyan/20 transition-all py-3 flex items-center justify-center gap-2"
         >
           <FaSwitch className={`text-xl transition-transform duration-300 ${isCourtSwitched ? 'rotate-180' : ''}`} />
           {isCourtSwitched ? 'Вернуть исходное расположение' : 'Поменять команды местами'}
         </button>
 
         {/* Счёт матча - вынесен в отдельную карточку для лучшей эргономики */}
-        <div className="p-4 rounded-xl glass-effect mb-4">
+        <div className="p-4 rounded-xl glass-effect mb-4 md:flex-grow">
           <div className="flex justify-between items-center mb-2">
-            <h3 className="font-semibold text-darkBlue text-lg">
-              {teams[0].name}
+            <h3 className="font-semibold text-darkBlue text-lg md:text-xl">
+              {isCourtSwitched ? teams[1].name : teams[0].name}
             </h3>
-            <h3 className="font-semibold text-darkBlue text-lg">
-              {teams[1].name}
+            <h3 className="font-semibold text-darkBlue text-lg md:text-xl">
+              {isCourtSwitched ? teams[0].name : teams[1].name}
             </h3>
           </div>
           
           <div className="flex justify-between items-center">
+            {/* Первая команда - отображаем в зависимости от переключателя */}
             <div 
               className={`flex-1 ${swipeMode ? 'relative' : ''}`}
               onTouchStart={swipeMode ? handleTouchStart : undefined}
-              onTouchEnd={swipeMode ? (e) => handleTouchEnd(e, 1) : undefined}
+              onTouchEnd={swipeMode ? (e) => handleTouchEnd(e, isCourtSwitched ? 2 : 1) : undefined}
             >
               <div className="flex flex-col items-center">
                 {!swipeMode && (
                   <button
-                    onClick={() => handleScoreChange(1, -1)}
-                    className="btn btn-accent w-16 h-16 rounded-full mb-2"
+                    onClick={() => handleScoreChange(isCourtSwitched ? 2 : 1, -1)}
+                    className="btn btn-accent w-12 h-12 md:w-16 md:h-16 rounded-full mb-2"
                     disabled={gameFinished || score1 <= 0}
                   >
                     <IoMdRemoveCircleOutline className="text-2xl" />
@@ -303,14 +307,14 @@ const GameBoard = ({ teams, resting, onGameEnd, settings }) => {
                   key={score1}
                   initial={{ scale: 1.2 }}
                   animate={{ scale: 1 }}
-                  className={`text-6xl font-bold ${gameFinished && score1 > score2 ? 'text-green-600' : 'text-darkBlue'} ${swipeMode ? 'text-7xl' : ''}`}
+                  className={`text-5xl md:text-6xl font-bold ${gameFinished && score1 > score2 ? 'text-green-600' : 'text-darkBlue'} ${swipeMode ? 'text-6xl md:text-7xl' : ''}`}
                 >
                   {score1}
                 </motion.span>
                 {!swipeMode && (
                   <button
-                    onClick={() => handleScoreChange(1, 1)}
-                    className="btn btn-cyan glow w-16 h-16 rounded-full mt-2"
+                    onClick={() => handleScoreChange(isCourtSwitched ? 2 : 1, 1)}
+                    className="btn btn-cyan glow w-12 h-12 md:w-16 md:h-16 rounded-full mt-2"
                     disabled={gameFinished}
                   >
                     <IoMdAddCircleOutline className="text-2xl" />
@@ -324,13 +328,13 @@ const GameBoard = ({ teams, resting, onGameEnd, settings }) => {
             <div 
               className={`flex-1 ${swipeMode ? 'relative' : ''}`}
               onTouchStart={swipeMode ? handleTouchStart : undefined}
-              onTouchEnd={swipeMode ? (e) => handleTouchEnd(e, 2) : undefined}
+              onTouchEnd={swipeMode ? (e) => handleTouchEnd(e, isCourtSwitched ? 1 : 2) : undefined}
             >
               <div className="flex flex-col items-center">
                 {!swipeMode && (
                   <button
-                    onClick={() => handleScoreChange(2, -1)}
-                    className="btn btn-accent w-16 h-16 rounded-full mb-2"
+                    onClick={() => handleScoreChange(isCourtSwitched ? 1 : 2, -1)}
+                    className="btn btn-accent w-12 h-12 md:w-16 md:h-16 rounded-full mb-2"
                     disabled={gameFinished || score2 <= 0}
                   >
                     <IoMdRemoveCircleOutline className="text-2xl" />
@@ -340,14 +344,14 @@ const GameBoard = ({ teams, resting, onGameEnd, settings }) => {
                   key={score2}
                   initial={{ scale: 1.2 }}
                   animate={{ scale: 1 }}
-                  className={`text-6xl font-bold ${gameFinished && score2 > score1 ? 'text-green-600' : 'text-darkBlue'} ${swipeMode ? 'text-7xl' : ''}`}
+                  className={`text-5xl md:text-6xl font-bold ${gameFinished && score2 > score1 ? 'text-green-600' : 'text-darkBlue'} ${swipeMode ? 'text-6xl md:text-7xl' : ''}`}
                 >
                   {score2}
                 </motion.span>
                 {!swipeMode && (
                   <button
-                    onClick={() => handleScoreChange(2, 1)}
-                    className="btn btn-cyan glow w-16 h-16 rounded-full mt-2"
+                    onClick={() => handleScoreChange(isCourtSwitched ? 1 : 2, 1)}
+                    className="btn btn-cyan glow w-12 h-12 md:w-16 md:h-16 rounded-full mt-2"
                     disabled={gameFinished}
                   >
                     <IoMdAddCircleOutline className="text-2xl" />
@@ -381,7 +385,7 @@ const GameBoard = ({ teams, resting, onGameEnd, settings }) => {
         </div>
       </div>
       
-      <div className="flex flex-col gap-3 mt-6">
+      <div className="flex flex-col md:flex-row gap-3 mt-6">
         <button 
           onClick={() => setShowModal(true)} 
           className={`btn ${gameFinished ? 'btn-cyan' : 'btn-accent'} glow ${gameFinished ? 'animate-pulse' : ''} w-full py-4`}
@@ -401,7 +405,7 @@ const GameBoard = ({ teams, resting, onGameEnd, settings }) => {
       </div>
 
       {/* История счёта */}
-      <div className="mt-6 p-4 rounded-xl glass-effect">
+      <div className="mt-6 p-4 rounded-xl glass-effect md:w-full">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-semibold">История счёта</h3>
           <button
@@ -431,7 +435,7 @@ const GameBoard = ({ teams, resting, onGameEnd, settings }) => {
       {/* Modal for confirming game end */}
       {showModal && (
         <div className="fixed inset-0 bg-gray-900 bg-opacity-80 flex items-center justify-center p-4 z-[70] backdrop-blur-sm overflow-y-auto">
-          <div className="w-full max-w-lg overflow-hidden">
+          <div className="w-full max-w-lg md:max-w-xl overflow-hidden">
             <div className="modal-header">
               <div className="flex justify-between items-center">
                 <h2 className="text-2xl font-bold">Подтверждение завершения игры</h2>
