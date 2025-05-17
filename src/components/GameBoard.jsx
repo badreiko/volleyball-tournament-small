@@ -25,9 +25,8 @@ const GameBoard = ({ teams, resting, onGameEnd, settings }) => {
   const [isCourtSwitched, setIsCourtSwitched] = useState(false);
   const [showScoreHistory, setShowScoreHistory] = useState(true);
   
-  // Массивы для хранения последовательности очков каждой команды
-  const [team1ScoringSequence, setTeam1ScoringSequence] = useState([]);
-  const [team2ScoringSequence, setTeam2ScoringSequence] = useState([]);
+  // История набора очков в правильном формате
+  const [scoringHistory, setScoringHistory] = useState([]);
 
   // Ref для хранения таймера автоматического завершения игры
   const autoFinishTimerRef = useRef(null);
@@ -99,24 +98,42 @@ const GameBoard = ({ teams, resting, onGameEnd, settings }) => {
     if (actualTeam === 1) {
       if (delta < 0 && score1 + delta < 0) return; // Предотвращаем отрицательный счет
       
-      // Добавляем очко в последовательность для первой команды, если это прибавление
+      // При добавлении очка добавляем событие в историю
       if (delta > 0) {
-        setTeam1ScoringSequence(prev => [...prev, score1 + 1]);
+        setScoringHistory(prev => [...prev, { team: 1, score: score1 + 1 }]);
       } else if (delta < 0) {
-        // Удаляем последнее очко при вычитании
-        setTeam1ScoringSequence(prev => prev.slice(0, -1));
+        // При уменьшении счёта удаляем последнее событие, если оно принадлежит этой команде
+        setScoringHistory(prev => {
+          const newHistory = [...prev];
+          for (let i = newHistory.length - 1; i >= 0; i--) {
+            if (newHistory[i].team === 1) {
+              newHistory.splice(i, 1);
+              break;
+            }
+          }
+          return newHistory;
+        });
       }
       
       setScore1((prev) => Math.max(0, prev + delta));
     } else {
       if (delta < 0 && score2 + delta < 0) return; // Предотвращаем отрицательный счет
       
-      // Добавляем очко в последовательность для второй команды, если это прибавление
+      // При добавлении очка добавляем событие в историю
       if (delta > 0) {
-        setTeam2ScoringSequence(prev => [...prev, score2 + 1]);
+        setScoringHistory(prev => [...prev, { team: 2, score: score2 + 1 }]);
       } else if (delta < 0) {
-        // Удаляем последнее очко при вычитании
-        setTeam2ScoringSequence(prev => prev.slice(0, -1));
+        // При уменьшении счёта удаляем последнее событие, если оно принадлежит этой команде
+        setScoringHistory(prev => {
+          const newHistory = [...prev];
+          for (let i = newHistory.length - 1; i >= 0; i--) {
+            if (newHistory[i].team === 2) {
+              newHistory.splice(i, 1);
+              break;
+            }
+          }
+          return newHistory;
+        });
       }
       
       setScore2((prev) => Math.max(0, prev + delta));
@@ -184,8 +201,7 @@ const GameBoard = ({ teams, resting, onGameEnd, settings }) => {
     setIsTimerRunning(false);
     setGameFinished(false);
     setErrorMessage("");
-    setTeam1ScoringSequence([]);
-    setTeam2ScoringSequence([]);
+    setScoringHistory([]);
     setIsCourtSwitched(false);
   };
   
@@ -196,15 +212,8 @@ const GameBoard = ({ teams, resting, onGameEnd, settings }) => {
     return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
   };
 
-  // Рендеринг истории счета в стиле, как на изображении
+  // Функция для отображения истории счета в стиле, как на изображении
   const renderScoreHistoryGrid = () => {
-    // Определяем максимальное количество позиций для отображения
-    const maxPositions = Math.max(
-      team1ScoringSequence.length + 5, 
-      team2ScoringSequence.length + 5, 
-      25
-    );
-    
     return (
       <div className="mt-4 overflow-x-auto bg-teal-700/10 rounded-lg border border-teal-800/20">
         <div className="p-3">
@@ -226,26 +235,34 @@ const GameBoard = ({ teams, resting, onGameEnd, settings }) => {
               </div>
             </div>
             
-            {/* Сетка последовательности очков */}
+            {/* Сетка истории счета */}
             <div className="flex overflow-x-auto">
-              {Array.from({ length: maxPositions }, (_, index) => (
-                <div key={`pos-${index}`} className="flex flex-col" style={{ minWidth: '24px' }}>
-                  {/* Ячейки для первой команды */}
+              {scoringHistory.map((event, index) => (
+                <div key={`event-${index}`} className="flex flex-col" style={{ minWidth: '24px' }}>
+                  {/* Ячейка для первой команды */}
                   <div className="h-8 w-6 flex items-center justify-center">
-                    {index < team1ScoringSequence.length ? (
+                    {event.team === 1 && (
                       <span className="bg-gray-300 w-full h-full flex items-center justify-center">
-                        {team1ScoringSequence[index]}
+                        {event.score}
                       </span>
-                    ) : null}
+                    )}
                   </div>
-                  {/* Ячейки для второй команды */}
+                  {/* Ячейка для второй команды */}
                   <div className="h-8 w-6 flex items-center justify-center">
-                    {index < team2ScoringSequence.length ? (
+                    {event.team === 2 && (
                       <span className="bg-gray-300 w-full h-full flex items-center justify-center">
-                        {team2ScoringSequence[index]}
+                        {event.score}
                       </span>
-                    ) : null}
+                    )}
                   </div>
+                </div>
+              ))}
+              
+              {/* Добавляем несколько пустых ячеек справа для эстетики */}
+              {Array.from({ length: 5 }, (_, i) => (
+                <div key={`empty-${i}`} className="flex flex-col" style={{ minWidth: '24px' }}>
+                  <div className="h-8 w-6"></div>
+                  <div className="h-8 w-6"></div>
                 </div>
               ))}
             </div>
