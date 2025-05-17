@@ -185,17 +185,13 @@ const GameBoard = ({ teams, resting, onGameEnd, settings }) => {
 
   // Функция для рендеринга истории счета в стиле, похожем на изображение
   const renderScoreHistoryGrid = () => {
-    // Создаем массив чисел от 1 до максимального счета +2 для отображения в сетке
+    // Создаем массив чисел от 1 до максимального счета для отображения в сетке
     const maxDisplayScore = Math.max(25, maxScore + 5);
     const scoreNumbers = Array.from({ length: maxDisplayScore }, (_, i) => i + 1);
 
-    // Вычисляем максимальные достигнутые очки для каждой команды
-    const maxTeam1Score = scoreHistory.length > 0 ? Math.max(...scoreHistory.map(entry => entry.score1)) : 0;
-    const maxTeam2Score = scoreHistory.length > 0 ? Math.max(...scoreHistory.map(entry => entry.score2)) : 0;
-
     return (
-      <div className="mt-4 overflow-x-auto">
-        <div className="bg-gray-50 p-3 rounded-lg">
+      <div className="mt-4 overflow-x-auto bg-teal-50 rounded-lg border border-teal-100">
+        <div className="p-3">
           <div className="flex justify-between mb-2">
             <h3 className="text-lg font-semibold text-darkBlue">
               Set 1: {score1}-{score2} {gameFinished ? "(завершен)" : "(играется)"}
@@ -206,6 +202,7 @@ const GameBoard = ({ teams, resting, onGameEnd, settings }) => {
           <div className="flex">
             {/* Имена команд */}
             <div className="w-28 shrink-0 mr-2">
+              <div className="h-8"></div> {/* Пустая ячейка для выравнивания с цифрами */}
               <div className="h-8 flex items-center font-semibold text-darkBlue">
                 {isCourtSwitched ? teams[1].name : teams[0].name}:
               </div>
@@ -218,13 +215,18 @@ const GameBoard = ({ teams, resting, onGameEnd, settings }) => {
             <div className="flex overflow-x-auto">
               {scoreNumbers.map(num => (
                 <div key={`score-${num}`} className="flex flex-col items-center" style={{ minWidth: '24px' }}>
-                  <div className="h-8 w-6 flex items-center justify-center">
+                  {/* Ряд цифр вверху */}
+                  <div className="h-8 w-6 flex items-center justify-center font-medium text-gray-700">
                     {num}
                   </div>
-                  <div className={`h-8 w-6 flex items-center justify-center ${score1 >= num ? 'bg-gray-300' : (maxTeam1Score >= num ? 'bg-gray-200' : '')}`}>
+                  {/* Ячейки для первой команды */}
+                  <div className={`h-8 w-6 flex items-center justify-center ${score1 >= num ? 'bg-gray-300' : ''
+                    }`}>
                     {score1 === num && '✓'}
                   </div>
-                  <div className={`h-8 w-6 flex items-center justify-center ${score2 >= num ? 'bg-gray-300' : (maxTeam2Score >= num ? 'bg-gray-200' : '')}`}>
+                  {/* Ячейки для второй команды */}
+                  <div className={`h-8 w-6 flex items-center justify-center ${score2 >= num ? 'bg-gray-300' : ''
+                    }`}>
                     {score2 === num && '✓'}
                   </div>
                 </div>
