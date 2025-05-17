@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { 
   FaVolleyballBall, 
   FaUsers, 
@@ -35,6 +35,9 @@ import PlayersRating from './components/PlayersRating';
 import PlayerStats from './components/PlayerStats';
 import DataManagement from './components/DataManagement';
 import { generateTeams, selectGameTeams, predictGameResult, generateFullSchedule } from './utils/teamGenerator';
+import logo from './assets/images/logo.svg';
+import { getTranslations } from './locales';
+import LanguageSwitcher from './components/LanguageSwitcher';
 import { 
   saveTournamentState, 
   loadTournamentState, 
@@ -45,6 +48,8 @@ import {
 } from './utils/storage';
 
 const App = () => {
+  // Получаем переводы для текущего языка
+  const t = useMemo(() => getTranslations(), []);
   // --- Основные состояния ---
   const [screen, setScreen] = useState('input');
   const [players, setPlayers] = useState([]);
@@ -635,8 +640,8 @@ const App = () => {
       {/* Header для мобильных */}
       <header className="md:hidden flex items-center justify-between p-4 bg-gradient-to-r from-[#0B8E8D] to-[#06324F] text-white sticky top-0 z-50 shadow-md">
         <div className="flex items-center">
-          <FaVolleyballBall className="mr-2" />
-          <h1 className="text-xl font-bold">Volleyball Турнир</h1>
+          <img src={logo} alt="Volleyball Tournament Logo" className="w-8 h-8 mr-2" />
+          <h1 className="text-xl font-bold">Волейбольный турнир</h1>
         </div>
         <div className="flex items-center gap-3">
           <button 
@@ -659,23 +664,24 @@ const App = () => {
       {/* Мобильное меню */}
       {mobileMenuOpen && (
         <div className="md:hidden fixed inset-0 z-40 bg-black/50 backdrop-blur-sm" onClick={() => setMobileMenuOpen(false)}>
-          <div 
-            className={`w-72 h-full ${themeClasses.sidebar} shadow-xl transform transition-transform p-4`}
-            onClick={e => e.stopPropagation()}
-          >
-            <div className="mb-6 border-b border-[#0B8E8D]/20 pb-4">
-              <div className="flex items-center mb-4">
-                <FaVolleyballBall className="mr-2 text-[#0B8E8D]" />
-                <h2 className="text-xl font-bold">Volleyball Турнир</h2>
-              </div>
-              <div className="flex gap-2">
-                <button 
-                  onClick={toggleDarkMode}
-                  className={`flex-1 flex items-center justify-center p-2 rounded-md ${darkMode ? 'bg-[#0B8E8D]' : 'bg-gray-200 text-gray-800'} transition-colors`}
-                >
-                  {darkMode ? <FaSun className="mr-2" /> : <FaMoon className="mr-2" />}
-                  {darkMode ? 'Светлая тема' : 'Тёмная тема'}
+        <div 
+          className={`w-72 h-full ${themeClasses.sidebar} shadow-xl transform transition-transform p-4`}
+          onClick={e => e.stopPropagation()}
+        >
+          <div className="mb-6 border-b border-[#0B8E8D]/20 pb-4">
+            <div className="flex items-center mb-4">
+              <img src={logo} alt="Volleyball Tournament Logo" className="w-12 h-12 mr-2 drop-shadow-md animate-pulse-slow" />
+              <h2 className="text-xl font-bold">{t.appName}</h2>
+            </div>
+            <div className="flex flex-col gap-2">
+              <button 
+                onClick={toggleDarkMode}
+                className={`flex-1 flex items-center justify-center p-2 rounded-md ${darkMode ? 'bg-[#0B8E8D]' : 'bg-gray-200 text-gray-800'} transition-colors`}
+              >
+                {darkMode ? <FaSun className="mr-2" /> : <FaMoon className="mr-2" />}
+                {darkMode ? t.lightTheme : t.darkTheme}
                 </button>
+                <LanguageSwitcher />
               </div>
             </div>
             <div className="space-y-2 overflow-y-auto max-h-[calc(100vh-200px)]">
@@ -686,7 +692,7 @@ const App = () => {
                 }}
                 className={`flex items-center w-full text-left p-3 rounded-lg transition-all duration-200 ${isMenuActive('input') ? themeClasses.activeMenu : themeClasses.hoverMenu}`}
               >
-                <FaVolleyballBall className="mr-3" /> Новый турнир
+                <FaVolleyballBall className="mr-3" /> {t.newTournament}
               </button>
               <button
                 onClick={() => {
@@ -695,7 +701,7 @@ const App = () => {
                 }}
                 className={`flex items-center w-full text-left p-3 rounded-lg transition-all duration-200 ${isMenuActive('games') ? themeClasses.activeMenu : themeClasses.hoverMenu}`}
               >
-                <FaUsers className="mr-3" /> Игры
+                <FaUsers className="mr-3" /> {t.games}
               </button>
               <button
                 onClick={() => {
@@ -704,7 +710,7 @@ const App = () => {
                 }}
                 className={`flex items-center w-full text-left p-3 rounded-lg transition-all duration-200 ${isMenuActive('results') ? themeClasses.activeMenu : themeClasses.hoverMenu}`}
               >
-                <FaTrophy className="mr-3" /> Результаты
+                <FaTrophy className="mr-3" /> {t.results}
               </button>
               <button
                 onClick={() => {
@@ -713,7 +719,7 @@ const App = () => {
                 }}
                 className={`flex items-center w-full text-left p-3 rounded-lg transition-all duration-200 ${isMenuActive('history') ? themeClasses.activeMenu : themeClasses.hoverMenu}`}
               >
-                <FaHistory className="mr-3" /> История
+                <FaHistory className="mr-3" /> {t.history}
               </button>
               <div className="pt-2 border-t border-[#0B8E8D]/10 mt-2"></div>
               <button
@@ -723,7 +729,7 @@ const App = () => {
                 }}
                 className={`flex items-center w-full text-left p-3 rounded-lg transition-all duration-200 ${isMenuActive('players') || isMenuActive('playerStats') ? themeClasses.activeMenu : themeClasses.hoverMenu}`}
               >
-                <FaChartBar className="mr-3" /> Рейтинг игроков
+                <FaChartBar className="mr-3" /> {t.playerRating}
               </button>
               <button
                 onClick={() => {
@@ -732,7 +738,7 @@ const App = () => {
                 }}
                 className={`flex items-center w-full text-left p-3 rounded-lg transition-all duration-200 ${isMenuActive('settings') ? themeClasses.activeMenu : themeClasses.hoverMenu}`}
               >
-                <FaCog className="mr-3" /> Настройки
+                <FaCog className="mr-3" /> {t.settings}
               </button>
               <button
                 onClick={() => {
@@ -741,7 +747,7 @@ const App = () => {
                 }}
                 className={`flex items-center w-full text-left p-3 rounded-lg transition-all duration-200 ${isMenuActive('data') ? themeClasses.activeMenu : themeClasses.hoverMenu}`}
               >
-                <FaDownload className="mr-3" /> Управление данными
+                <FaDownload className="mr-3" /> {t.dataManagement}
               </button>
               <button
                 onClick={() => {
@@ -750,7 +756,7 @@ const App = () => {
                 }}
                 className={`flex items-center w-full text-left p-3 rounded-lg transition-all duration-200 hover:bg-[#FDD80F]/10`}
               >
-                <FaGlobe className="mr-3 text-[#FDD80F]" /> Правила
+                <FaGlobe className="mr-3 text-[#FDD80F]" /> {t.rules}
               </button>
             </div>
           </div>
@@ -761,16 +767,19 @@ const App = () => {
       <aside className={`hidden md:block md:w-64 ${themeClasses.sidebar} shadow-md md:h-screen md:sticky md:top-0 z-40 md:border-r shrink-0 transition-colors duration-300`}>
         <div className="p-4 border-b border-[#0B8E8D]/20 flex justify-between items-center">
           <h1 className={`text-xl font-bold ${themeClasses.title} flex items-center`}>
-            <FaVolleyballBall className="mr-2 text-[#0B8E8D]" /> Volleyball Турнир
+            <img src={logo} alt="Volleyball Tournament Logo" className="w-10 h-10 mr-2 drop-shadow-md" /> {t.appName}
           </h1>
-          <button 
-            onClick={toggleDarkMode}
-            className={`p-2 rounded-full ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-200'} transition-colors`}
-            title={darkMode ? "Включить светлую тему" : "Включить тёмную тему"}
-            aria-label={darkMode ? "Включить светлую тему" : "Включить тёмную тему"}
-          >
-            {darkMode ? <FaSun className="text-yellow-300" /> : <FaMoon className="text-gray-600" />}
-          </button>
+          <div className="flex items-center gap-2">
+            <LanguageSwitcher />
+            <button 
+              onClick={toggleDarkMode}
+              className={`p-2 rounded-full ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-200'} transition-colors`}
+              title={darkMode ? t.lightTheme : t.darkTheme}
+              aria-label={darkMode ? t.lightTheme : t.darkTheme}
+            >
+              {darkMode ? <FaSun className="text-yellow-300" /> : <FaMoon className="text-gray-600" />}
+            </button>
+          </div>
         </div>
         <div className="p-4 space-y-2">
           <button
@@ -822,7 +831,7 @@ const App = () => {
             onClick={() => setShowRules(true)}
             className="flex items-center w-full text-left p-3 rounded-lg transition-all duration-200 hover:bg-[#FDD80F]/10 text-[#FDD80F]"
           >
-            <FaGlobe className="mr-3" /> Правила
+            <FaGlobe className="mr-3" /> {t.rules}
           </button>
         </div>
       </aside>
