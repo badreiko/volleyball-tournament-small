@@ -809,7 +809,7 @@ const App = () => {
       <aside className={`hidden md:block md:w-64 ${themeClasses.sidebar} shadow-md md:h-screen md:sticky md:top-0 z-40 md:border-r shrink-0 transition-colors duration-300`}>
         <div className="p-4 border-b border-[#0B8E8D]/20 flex flex-col gap-3">
           <div className="flex flex-col items-center mb-3">
-            <img src={logoSvg} alt="Volleyball Tournament Logo" className="h-20 mb-2" />
+            <img src={logoSvg} alt="Volleyball Tournament Logo" className="h-40 mb-2" />
           </div>
           <h1 className={`text-xl font-bold ${themeClasses.title} flex items-center`}>
             <FaVolleyballBall className="mr-2 text-[#0B8E8D]" /> {t('header.title')}

@@ -22,7 +22,7 @@ const LanguageSwitcher = ({ className }) => {
       <select 
         value={getLanguage()} 
         onChange={handleLanguageChange} 
-        className={className}
+        className="bg-transparent border border-[#0B8E8D] rounded-md px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-[#0B8E8D] text-[#06324F] dark:text-white"
       >
         <option value="ru">Русский</option>
         <option value="cs">Česky</option>
