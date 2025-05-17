@@ -679,7 +679,7 @@ const App = () => {
       {/* Header для мобильных */}
       <header className="md:hidden flex items-center justify-between p-4 bg-gradient-to-r from-[#0B8E8D] to-[#06324F] text-white sticky top-0 z-50 shadow-md">
         <div className="flex items-center">
-          <FaVolleyballBall className="mr-2" />
+          <img src={logoSvg} alt="Logo" className="h-8 mr-2" />
           <h1 className="text-xl font-bold">{t('header.title')}</h1>
         </div>
         <div className="flex items-center gap-3">
@@ -808,6 +808,9 @@ const App = () => {
       {/* Sidebar для desktop */}
       <aside className={`hidden md:block md:w-64 ${themeClasses.sidebar} shadow-md md:h-screen md:sticky md:top-0 z-40 md:border-r shrink-0 transition-colors duration-300`}>
         <div className="p-4 border-b border-[#0B8E8D]/20 flex flex-col gap-3">
+          <div className="flex flex-col items-center mb-3">
+            <img src={logoSvg} alt="Volleyball Tournament Logo" className="h-20 mb-2" />
+          </div>
           <h1 className={`text-xl font-bold ${themeClasses.title} flex items-center`}>
             <FaVolleyballBall className="mr-2 text-[#0B8E8D]" /> {t('header.title')}
           </h1>
