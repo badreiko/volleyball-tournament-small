@@ -25,6 +25,7 @@ import {
   FaUndo,
   FaPlay
 } from 'react-icons/fa';
+import logoSvg from './assets/images/logo.svg';
 import PlayerInput from './components/PlayerInput';
 import GameBoard from './components/GameBoard';
 import GameList from './components/GameList';
@@ -702,15 +703,18 @@ const App = () => {
 
       {/* Мобильное меню */}
       {mobileMenuOpen && (
-        <div className="md:hidden fixed inset-0 z-40 bg-black/50 backdrop-blur-sm" onClick={() => setMobileMenuOpen(false)}>
+        <div className="fixed inset-0 bg-gray-900 bg-opacity-80 flex items-center justify-center p-4 z-[70] backdrop-blur-sm">
           <div 
             className={`w-72 h-full ${themeClasses.sidebar} shadow-xl transform transition-transform p-4`}
             onClick={e => e.stopPropagation()}
           >
             <div className="mb-6 border-b border-[#0B8E8D]/20 pb-4">
-              <div className="flex items-center mb-4">
-                <FaVolleyballBall className="mr-2 text-[#0B8E8D]" />
-                <h2 className="text-xl font-bold">{t('header.title')}</h2>
+              <div className="flex flex-col items-center mb-4">
+                <img src={logoSvg} alt="Volleyball Tournament Logo" className="h-16 mb-2" />
+                <div className="flex items-center">
+                  <FaVolleyballBall className="mr-2 text-[#0B8E8D]" />
+                  <h2 className="text-xl font-bold">{t('header.title')}</h2>
+                </div>
               </div>
               <div className="flex gap-2">
                 <button 
