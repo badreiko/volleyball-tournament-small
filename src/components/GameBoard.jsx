@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
-import { FaPlus, FaMinus, FaVolleyballBall, FaCheck, FaUndo, FaChartLine, FaExchangeAlt } from 'react-icons/fa';
+import { FaPlus, FaMinus, FaVolleyballBall, FaCheck, FaUndo, FaChartLine, FaExchangeAlt, FaHandPointUp } from 'react-icons/fa';
+import { MdSwipe } from 'react-icons/md';
 import { motion } from 'framer-motion';
 import { calculateTeamRating, predictGameResult } from '../utils/teamGenerator';
 
@@ -63,6 +64,13 @@ const GameBoard = ({ teams, resting, onGameEnd, settings }) => {
     };
   }, [score1, score2, maxScore, minPointDifference]);
 
+  // Обработка свайпов для мобильных устройств
+  const touchStartX = useRef(0);
+  const touchStartY = useRef(0);
+  const touchEndX = useRef(0);
+  const touchEndY = useRef(0);
+  const [swipeMode, setSwipeMode] = useState(false);
+  
   const handleScoreChange = (team, delta) => {
     // Если игра завершена, не позволяем менять счет
     if (gameFinished) {
@@ -80,6 +88,31 @@ const GameBoard = ({ teams, resting, onGameEnd, settings }) => {
     // Сбрасываем сообщение об ошибке при изменении счета
     if (errorMessage) {
       setErrorMessage("");
+    }
+  };
+  
+  // Обработчики свайпов для мобильного управления счётом
+  const handleTouchStart = (e) => {
+    touchStartX.current = e.touches[0].clientX;
+    touchStartY.current = e.touches[0].clientY;
+  };
+  
+  const handleTouchEnd = (e, team) => {
+    touchEndX.current = e.changedTouches[0].clientX;
+    touchEndY.current = e.changedTouches[0].clientY;
+    
+    const deltaX = touchEndX.current - touchStartX.current;
+    const deltaY = touchEndY.current - touchStartY.current;
+    
+    // Проверяем, что свайп был преимущественно горизонтальным
+    if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 50) {
+      if (deltaX > 0) {
+        // Свайп вправо - увеличиваем счёт
+        handleScoreChange(team, 1);
+      } else {
+        // Свайп влево - уменьшаем счёт
+        handleScoreChange(team, -1);
+      }
     }
   };
 
@@ -121,7 +154,7 @@ const GameBoard = ({ teams, resting, onGameEnd, settings }) => {
 
   return (
     <div className="p-4 md:p-6">
-      <div className="card max-w-2xl mx-auto fade-in">
+      <div className="card max-w-2xl mx-auto fade-in overflow-hidden">
       <h2 className="text-2xl font-bold text-darkBlue flex items-center mb-6">
         <FaVolleyballBall className="mr-3 text-cyan" /> Текущая игра
       </h2>
@@ -191,6 +224,16 @@ const GameBoard = ({ teams, resting, onGameEnd, settings }) => {
         </div>
       )}
       
+      {/* Переключатель режима свайпов */}
+      <div className="mb-4 flex justify-center">
+        <button 
+          onClick={() => setSwipeMode(!swipeMode)}
+          className={`flex items-center px-4 py-2 rounded-full text-sm transition-all ${swipeMode ? 'bg-cyan text-white' : 'bg-gray-200 text-gray-700'}`}
+        >
+          <MdSwipe className="mr-2" /> {swipeMode ? 'Режим свайпов включен' : 'Включить режим свайпов'}
+        </button>
+      </div>
+      
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
         <div className="p-6 rounded-xl glass-effect">
           <h3 className="font-semibold text-darkBlue text-lg mb-2">
@@ -204,29 +247,44 @@ const GameBoard = ({ teams, resting, onGameEnd, settings }) => {
             </div>
           )}
           
-          <div className="flex items-center justify-center gap-4">
-            <button
-              onClick={() => handleScoreChange(1, -1)}
-              className="btn btn-accent"
-              disabled={gameFinished || score1 <= 0}
-            >
-              <FaMinus className="inline mr-1" /> 1
-            </button>
-            <motion.span
-              key={score1}
-              initial={{ scale: 1.2 }}
-              animate={{ scale: 1 }}
-              className={`text-4xl font-bold ${gameFinished && score1 > score2 ? 'text-green-600' : 'text-darkBlue'}`}
-            >
-              {score1}
-            </motion.span>
-            <button
-              onClick={() => handleScoreChange(1, 1)}
-              className="btn btn-cyan glow"
-              disabled={gameFinished}
-            >
-              <FaPlus className="inline mr-1" /> 1
-            </button>
+          <div 
+            className={`flex flex-col items-center ${swipeMode ? 'relative' : ''}`}
+            onTouchStart={swipeMode ? handleTouchStart : undefined}
+            onTouchEnd={swipeMode ? (e) => handleTouchEnd(e, 1) : undefined}
+          >
+            {swipeMode && (
+              <div className="mb-2 text-sm text-gray-500 flex items-center">
+                <FaHandPointUp className="mr-1" /> Свайп влево/вправо для изменения счёта
+              </div>
+            )}
+            <div className="flex items-center justify-center gap-4 w-full">
+              {!swipeMode && (
+                <button
+                  onClick={() => handleScoreChange(1, -1)}
+                  className="btn btn-accent w-20 h-20 rounded-full"
+                  disabled={gameFinished || score1 <= 0}
+                >
+                  <FaMinus className="text-xl" />
+                </button>
+              )}
+              <motion.span
+                key={score1}
+                initial={{ scale: 1.2 }}
+                animate={{ scale: 1 }}
+                className={`text-5xl font-bold ${gameFinished && score1 > score2 ? 'text-green-600' : 'text-darkBlue'} ${swipeMode ? 'text-6xl' : ''}`}
+              >
+                {score1}
+              </motion.span>
+              {!swipeMode && (
+                <button
+                  onClick={() => handleScoreChange(1, 1)}
+                  className="btn btn-cyan glow w-20 h-20 rounded-full"
+                  disabled={gameFinished}
+                >
+                  <FaPlus className="text-xl" />
+                </button>
+              )}
+            </div>
           </div>
         </div>
         <div className="p-6 rounded-xl glass-effect">
@@ -241,29 +299,44 @@ const GameBoard = ({ teams, resting, onGameEnd, settings }) => {
             </div>
           )}
           
-          <div className="flex items-center justify-center gap-4">
-            <button
-              onClick={() => handleScoreChange(2, -1)}
-              className="btn btn-accent"
-              disabled={gameFinished || score2 <= 0}
-            >
-              <FaMinus className="inline mr-1" /> 1
-            </button>
-            <motion.span
-              key={score2}
-              initial={{ scale: 1.2 }}
-              animate={{ scale: 1 }}
-              className={`text-4xl font-bold ${gameFinished && score2 > score1 ? 'text-green-600' : 'text-darkBlue'}`}
-            >
-              {score2}
-            </motion.span>
-            <button
-              onClick={() => handleScoreChange(2, 1)}
-              className="btn btn-cyan glow"
-              disabled={gameFinished}
-            >
-              <FaPlus className="inline mr-1" /> 1
-            </button>
+          <div 
+            className={`flex flex-col items-center ${swipeMode ? 'relative' : ''}`}
+            onTouchStart={swipeMode ? handleTouchStart : undefined}
+            onTouchEnd={swipeMode ? (e) => handleTouchEnd(e, 2) : undefined}
+          >
+            {swipeMode && (
+              <div className="mb-2 text-sm text-gray-500 flex items-center">
+                <FaHandPointUp className="mr-1" /> Свайп влево/вправо для изменения счёта
+              </div>
+            )}
+            <div className="flex items-center justify-center gap-4 w-full">
+              {!swipeMode && (
+                <button
+                  onClick={() => handleScoreChange(2, -1)}
+                  className="btn btn-accent w-20 h-20 rounded-full"
+                  disabled={gameFinished || score2 <= 0}
+                >
+                  <FaMinus className="text-xl" />
+                </button>
+              )}
+              <motion.span
+                key={score2}
+                initial={{ scale: 1.2 }}
+                animate={{ scale: 1 }}
+                className={`text-5xl font-bold ${gameFinished && score2 > score1 ? 'text-green-600' : 'text-darkBlue'} ${swipeMode ? 'text-6xl' : ''}`}
+              >
+                {score2}
+              </motion.span>
+              {!swipeMode && (
+                <button
+                  onClick={() => handleScoreChange(2, 1)}
+                  className="btn btn-cyan glow w-20 h-20 rounded-full"
+                  disabled={gameFinished}
+                >
+                  <FaPlus className="text-xl" />
+                </button>
+              )}
+            </div>
           </div>
         </div>
       </div>
@@ -280,14 +353,14 @@ const GameBoard = ({ teams, resting, onGameEnd, settings }) => {
           <div className="flex justify-center gap-3">
             <button
               onClick={() => setIsTimerRunning(!isTimerRunning)}
-              className="btn btn-accent"
+              className="btn btn-accent w-full sm:w-auto"
               disabled={gameFinished}
             >
               {isTimerRunning ? 'Пауза' : 'Старт'}
             </button>
             <button
               onClick={() => setTimer(settings?.roundDuration * 60 || 600)}
-              className="btn btn-cyan"
+              className="btn btn-cyan w-full sm:w-auto"
               disabled={gameFinished}
             >
               Сбросить
@@ -311,10 +384,10 @@ const GameBoard = ({ teams, resting, onGameEnd, settings }) => {
         </div>
       )}
       
-      <div className="flex justify-between mt-6">
+      <div className="flex flex-col sm:flex-row justify-between mt-6 gap-4">
         <button 
           onClick={resetScores} 
-          className="btn bg-gray-200 text-gray-800 hover:bg-gray-300 transition-colors"
+          className="btn bg-gray-200 text-gray-800 hover:bg-gray-300 transition-colors w-full sm:w-auto"
           disabled={gameFinished && showModal}
         >
           <FaUndo className="mr-2" /> Сбросить счёт
@@ -322,7 +395,7 @@ const GameBoard = ({ teams, resting, onGameEnd, settings }) => {
         
         <button 
           onClick={() => setShowModal(true)} 
-          className={`btn ${gameFinished ? 'btn-cyan' : 'btn-accent'} glow ${gameFinished ? 'animate-pulse' : ''}`}
+          className={`btn ${gameFinished ? 'btn-cyan' : 'btn-accent'} glow ${gameFinished ? 'animate-pulse' : ''} w-full sm:w-auto`}
         >
           <FaCheck className="mr-2" /> Завершить игру
         </button>
@@ -331,7 +404,7 @@ const GameBoard = ({ teams, resting, onGameEnd, settings }) => {
 
       {/* Modal for confirming game end */}
       {showModal && (
-        <div className="fixed inset-0 bg-gray-900 bg-opacity-80 flex items-center justify-center p-4 z-[70] backdrop-blur-sm">
+        <div className="fixed inset-0 bg-gray-900 bg-opacity-80 flex items-center justify-center p-4 z-[70] backdrop-blur-sm overflow-y-auto">
           <div className="w-full max-w-lg overflow-hidden">
             <div className="modal-header">
               <div className="flex justify-between items-center">
