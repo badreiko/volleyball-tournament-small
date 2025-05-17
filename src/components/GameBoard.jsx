@@ -1,5 +1,14 @@
 import { useState, useEffect, useRef } from 'react';
-import { FaPlus, FaMinus, FaVolleyballBall, FaCheck, FaUndo, FaChartLine, FaExchangeAlt, FaHandPointUp } from 'react-icons/fa';
+import { 
+  FaVolleyballBall, 
+  FaCheck, 
+  FaUndo, 
+  FaChartLine, 
+  FaHandPointUp,
+  FaHistory
+} from 'react-icons/fa';
+import { FaSwitch } from "react-icons/fa6";
+import { IoMdAddCircleOutline, IoMdRemoveCircleOutline } from 'react-icons/io';
 import { MdSwipe } from 'react-icons/md';
 import { motion } from 'framer-motion';
 import { calculateTeamRating, predictGameResult } from '../utils/teamGenerator';
@@ -13,10 +22,13 @@ const GameBoard = ({ teams, resting, onGameEnd, settings }) => {
   const [prediction, setPrediction] = useState(null);
   const [gameFinished, setGameFinished] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
-  
+  const [isCourtSwitched, setIsCourtSwitched] = useState(false);
+  const [scoreHistory, setScoreHistory] = useState([]);
+  const [showScoreHistory, setShowScoreHistory] = useState(false);
+
   // Ref для хранения таймера автоматического завершения игры
   const autoFinishTimerRef = useRef(null);
-  
+
   // Получаем настройки из пропсов
   const maxScore = settings?.maxScoreRounds?.[teams.length === 2 ? 'full' : 'triples'] || 25;
   const minPointDifference = settings?.minPointDifference || 2;
@@ -72,6 +84,7 @@ const GameBoard = ({ teams, resting, onGameEnd, settings }) => {
   const [swipeMode, setSwipeMode] = useState(false);
   
   const handleScoreChange = (team, delta) => {
+    const actualTeam = isCourtSwitched ? (team === 1 ? 2 : 1) : team;
     // Если игра завершена, не позволяем менять счет
     if (gameFinished) {
       setErrorMessage(`Игра завершена! Счёт: ${score1}:${score2}`);
@@ -79,7 +92,7 @@ const GameBoard = ({ teams, resting, onGameEnd, settings }) => {
       return;
     }
     
-    if (team === 1) {
+    if (actualTeam === 1) {
       setScore1((prev) => Math.max(0, prev + delta));
     } else {
       setScore2((prev) => Math.max(0, prev + delta));
@@ -89,6 +102,15 @@ const GameBoard = ({ teams, resting, onGameEnd, settings }) => {
     if (errorMessage) {
       setErrorMessage("");
     }
+
+    // Добавляем очко в историю
+    const scoringTeam = actualTeam === 1 ? teams[0].name : teams[1].name;
+    setScoreHistory(prev => [...prev, {
+      team: scoringTeam,
+      score1: actualTeam === 1 ? score1 + delta : score1,
+      score2: actualTeam === 2 ? score2 + delta : score2,
+      isPositive: delta > 0
+    }]);
   };
   
   // Обработчики свайпов для мобильного управления счётом
@@ -134,6 +156,10 @@ const GameBoard = ({ teams, resting, onGameEnd, settings }) => {
       setErrorMessage(message);
       setTimeout(() => setErrorMessage(""), 5000);
     }
+  };
+
+  const handleCourtSwitch = () => {
+    setIsCourtSwitched(!isCourtSwitched);
   };
 
   const resetScores = () => {
@@ -235,6 +261,15 @@ const GameBoard = ({ teams, resting, onGameEnd, settings }) => {
       </div>
       
       <div className="flex flex-col mb-6">
+        {/* Кнопка смены сторон */}
+        <button
+          onClick={handleCourtSwitch}
+          className="mb-4 w-full btn bg-cyan/10 text-cyan hover:bg-cyan/20 transition-all py-3 flex items-center justify-center gap-2"
+        >
+          <FaSwitch className={`text-xl transition-transform duration-300 ${isCourtSwitched ? 'rotate-180' : ''}`} />
+          {isCourtSwitched ? 'Вернуть исходное расположение' : 'Поменять команды местами'}
+        </button>
+
         {/* Счёт матча - вынесен в отдельную карточку для лучшей эргономики */}
         <div className="p-4 rounded-xl glass-effect mb-4">
           <div className="flex justify-between items-center mb-2">
@@ -403,7 +438,8 @@ const GameBoard = ({ teams, resting, onGameEnd, settings }) => {
           onClick={() => setShowModal(true)} 
           className={`btn ${gameFinished ? 'btn-cyan' : 'btn-accent'} glow ${gameFinished ? 'animate-pulse' : ''} w-full py-4`}
         >
-          <FaCheck className="mr-2" /> Завершить игру
+          <FaCheck className="text-xl" />
+          <span className="text-lg">Завершить игру</span>
         </button>
         
         <button 
@@ -411,8 +447,36 @@ const GameBoard = ({ teams, resting, onGameEnd, settings }) => {
           className="btn bg-gray-200 text-gray-800 hover:bg-gray-300 transition-colors w-full py-3"
           disabled={gameFinished && showModal}
         >
-          <FaUndo className="mr-2" /> Сбросить счёт
+          <FaUndo className="text-xl" />
+          <span className="text-lg">Сбросить счёт</span>
         </button>
+      </div>
+
+      {/* История счёта */}
+      <div className="mt-6 p-4 rounded-xl glass-effect">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-semibold">История счёта</h3>
+          <button
+            onClick={() => setShowScoreHistory(!showScoreHistory)}
+            className="btn btn-sm btn-ghost"
+          >
+            <FaHistory className="text-xl" />
+          </button>
+        </div>
+        
+        {showScoreHistory && (
+          <div className="space-y-2 max-h-48 overflow-y-auto">
+            {scoreHistory.map((entry, index) => (
+              <div 
+                key={index}
+                className={`flex items-center justify-between p-2 rounded ${entry.isPositive ? 'bg-green-100/10' : 'bg-red-100/10'}`}
+              >
+                <span className="font-medium">{entry.team}</span>
+                <span className="text-sm">{entry.score1} : {entry.score2}</span>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
       </div>
 
@@ -428,78 +492,34 @@ const GameBoard = ({ teams, resting, onGameEnd, settings }) => {
                 </button>
               </div>
             </div>
-            <div className="modal-body">
+            <div className="modal-body p-6 bg-gray-800 rounded-xl">
               <div className="bg-gradient-to-r from-peach/30 to-darkBlue/10 p-4 rounded-lg mb-6">
                 <div className="flex justify-between items-center">
-                  <div className="text-center w-5/12">
-                    <div className="text-lg font-bold text-darkBlue">{teams[0].name}</div>
-                    <div className={`text-2xl font-bold ${score1 > score2 ? 'text-green-600' : 'text-red-600'}`}>
-                      {score1}
+                  <div>
+                    <h3 className="text-xl mb-2">Итоговый счёт</h3>
+                    <p className="text-3xl font-bold">{score1} : {score2}</p>
+                  </div>
+                  {prediction && (
+                    <div className="text-right">
+                      <p className="text-sm opacity-70 mb-1">Предсказание</p>
+                      <p className="text-xl font-bold">{prediction.predictedScore1} : {prediction.predictedScore2}</p>
                     </div>
-                  </div>
-                  <div className="text-center w-2/12">
-                    <div className="text-xl font-bold text-darkBlue/60">vs</div>
-                  </div>
-                  <div className="text-center w-5/12">
-                    <div className="text-lg font-bold text-darkBlue">{teams[1].name}</div>
-                    <div className={`text-2xl font-bold ${score2 > score1 ? 'text-green-600' : 'text-red-600'}`}>
-                      {score2}
-                    </div>
-                  </div>
+                  )}
                 </div>
               </div>
-              
-              {!gameFinished && (
-                <div className="bg-yellow-100 text-yellow-800 p-3 rounded-lg mb-4">
-                  <p className="text-sm font-medium">
-                    Внимание! Игра не соответствует условиям завершения:
-                  </p>
-                  <ul className="list-disc pl-5 text-sm mt-1">
-                    {score1 < maxScore && score2 < maxScore && (
-                      <li>Ни одна из команд не достигла {maxScore} очков</li>
-                    )}
-                    {Math.abs(score1 - score2) < minPointDifference && (
-                      <li>Разница в счете меньше {minPointDifference} очков</li>
-                    )}
-                  </ul>
-                </div>
-              )}
-              
+
               <div className="space-y-4">
-                <div className="bg-white p-4 rounded-lg shadow-sm border border-darkBlue/20">
-                  <label className="block text-sm font-medium text-darkBlue mb-2">Счёт</label>
-                  <div className="flex items-center justify-between">
-                    <input
-                      type="number"
-                      value={score1}
-                      onChange={(e) => setScore1(Math.max(0, parseInt(e.target.value) || 0))}
-                      className={`w-20 p-2 border ${gameFinished ? 'border-green-500' : 'border-darkBlue/30'} rounded-lg text-center font-bold text-lg focus:ring-2 focus:ring-cyan focus:border-cyan`}
-                    />
-                    <span className="text-darkBlue/60 text-xl font-bold">:</span>
-                    <input
-                      type="number"
-                      value={score2}
-                      onChange={(e) => setScore2(Math.max(0, parseInt(e.target.value) || 0))}
-                      className={`w-20 p-2 border ${gameFinished ? 'border-green-500' : 'border-darkBlue/30'} rounded-lg text-center font-bold text-lg focus:ring-2 focus:ring-cyan focus:border-cyan`}
-                    />
-                  </div>
-                </div>
-              </div>
-              <div className="mt-6 flex flex-col sm:flex-row justify-end gap-3">
                 <button
-                  onClick={() => {
-                    resetScores();
-                    setShowModal(false);
-                  }}
-                  className="w-full sm:w-auto bg-accent/10 text-accent py-2 px-4 rounded-lg hover:bg-accent/20 transition-all duration-200 shadow-sm border border-accent/20 flex items-center justify-center text-sm"
+                  onClick={handleGameEnd}
+                  className="btn btn-accent w-full py-3"
                 >
-                  <FaUndo className="mr-2" /> Сбросить
+                  Подтвердить
                 </button>
                 <button
-                  onClick={handleEndGame}
-                  className={`w-full sm:w-auto btn ${gameFinished ? 'btn-cyan' : 'btn-accent'} flex items-center justify-center text-sm`}
+                  onClick={() => setShowModal(false)}
+                  className="btn btn-ghost w-full py-3"
                 >
-                  <FaCheck className="mr-2" /> Завершить
+                  Отмена
                 </button>
               </div>
             </div>
