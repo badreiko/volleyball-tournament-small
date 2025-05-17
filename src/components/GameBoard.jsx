@@ -186,9 +186,19 @@ const GameBoard = ({ teams, resting, onGameEnd, settings }) => {
   return (
     <div className="p-4 md:p-6">
       <div className="card md:max-w-3xl lg:max-w-4xl mx-auto fade-in overflow-hidden">
-      <h2 className="text-2xl md:text-3xl font-bold text-darkBlue flex items-center mb-6">
-        <FaVolleyballBall className="mr-3 text-cyan" /> Текущая игра
-      </h2>
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-2xl md:text-3xl font-bold text-darkBlue flex items-center">
+          <FaVolleyballBall className="mr-3 text-cyan" /> Текущая игра
+        </h2>
+        {/* Кнопка смены сторон - перемещена в заголовок */}
+        <button
+          onClick={handleCourtSwitch}
+          className="btn bg-cyan/10 text-cyan hover:bg-cyan/20 transition-all py-2 px-4 flex items-center justify-center gap-2 rounded-lg"
+        >
+          <FaSwitch className={`transition-transform duration-300 ${isCourtSwitched ? 'rotate-180' : ''}`} />
+          <span className="hidden md:inline">{isCourtSwitched ? 'Вернуть' : 'Поменять местами'}</span>
+        </button>
+      </div>
       
       {/* Информация о счете и условиях завершения */}
       <div className="mb-4 text-center bg-gradient-to-r from-cyan/10 to-darkBlue/10 p-3 rounded-lg">
@@ -266,18 +276,10 @@ const GameBoard = ({ teams, resting, onGameEnd, settings }) => {
       </div>
       
       <div className="flex flex-col md:flex-row md:gap-6 mb-6">
-        {/* Кнопка смены сторон */}
-        <button
-          onClick={handleCourtSwitch}
-          className="mb-4 w-full md:w-auto md:flex-shrink-0 btn bg-cyan/10 text-cyan hover:bg-cyan/20 transition-all py-3 flex items-center justify-center gap-2"
-        >
-          <FaSwitch className={`text-xl transition-transform duration-300 ${isCourtSwitched ? 'rotate-180' : ''}`} />
-          {isCourtSwitched ? 'Вернуть исходное расположение' : 'Поменять команды местами'}
-        </button>
 
         {/* Счёт матча - вынесен в отдельную карточку для лучшей эргономики */}
         <div className="p-4 rounded-xl glass-effect mb-4 md:flex-grow">
-          <div className="flex justify-between items-center mb-2">
+          <div className="flex justify-between items-center mb-4">
             <h3 className="font-semibold text-darkBlue text-lg md:text-xl">
               {isCourtSwitched ? teams[1].name : teams[0].name}
             </h3>
@@ -307,7 +309,7 @@ const GameBoard = ({ teams, resting, onGameEnd, settings }) => {
                   key={score1}
                   initial={{ scale: 1.2 }}
                   animate={{ scale: 1 }}
-                  className={`text-5xl md:text-6xl font-bold ${gameFinished && score1 > score2 ? 'text-green-600' : 'text-darkBlue'} ${swipeMode ? 'text-6xl md:text-7xl' : ''}`}
+                  className={`text-5xl md:text-7xl font-bold ${gameFinished && score1 > score2 ? 'text-green-600' : 'text-darkBlue'} ${swipeMode ? 'text-6xl md:text-8xl' : ''}`}
                 >
                   {score1}
                 </motion.span>
@@ -323,7 +325,7 @@ const GameBoard = ({ teams, resting, onGameEnd, settings }) => {
               </div>
             </div>
             
-            <div className="text-5xl font-bold text-darkBlue/40 mx-4">:</div>
+            <div className="text-5xl md:text-7xl font-bold text-darkBlue/40 mx-4">:</div>
             
             <div 
               className={`flex-1 ${swipeMode ? 'relative' : ''}`}
@@ -344,7 +346,7 @@ const GameBoard = ({ teams, resting, onGameEnd, settings }) => {
                   key={score2}
                   initial={{ scale: 1.2 }}
                   animate={{ scale: 1 }}
-                  className={`text-5xl md:text-6xl font-bold ${gameFinished && score2 > score1 ? 'text-green-600' : 'text-darkBlue'} ${swipeMode ? 'text-6xl md:text-7xl' : ''}`}
+                  className={`text-5xl md:text-7xl font-bold ${gameFinished && score2 > score1 ? 'text-green-600' : 'text-darkBlue'} ${swipeMode ? 'text-6xl md:text-8xl' : ''}`}
                 >
                   {score2}
                 </motion.span>
@@ -373,11 +375,11 @@ const GameBoard = ({ teams, resting, onGameEnd, settings }) => {
           
           {/* Таймер игры */}
           <div className="mt-6 flex justify-between items-center">
-            <div className="text-sm text-darkBlue/70">Время игры:</div>
-            <div className="text-xl font-semibold">{formatTime(timer)}</div>
+            <div className="text-sm md:text-base text-darkBlue/70">Время игры:</div>
+            <div className="text-xl md:text-2xl font-semibold">{formatTime(timer)}</div>
             <button
               onClick={() => setIsTimerRunning(!isTimerRunning)}
-              className={`btn btn-sm ${isTimerRunning ? 'btn-accent' : 'btn-cyan'}`}
+              className={`btn btn-sm md:btn-md ${isTimerRunning ? 'btn-accent' : 'btn-cyan'}`}
             >
               {isTimerRunning ? 'Пауза' : 'Старт'}
             </button>
@@ -385,10 +387,10 @@ const GameBoard = ({ teams, resting, onGameEnd, settings }) => {
         </div>
       </div>
       
-      <div className="flex flex-col md:flex-row gap-3 mt-6">
+      <div className="flex flex-col md:flex-row gap-3 mt-6 md:mt-8">
         <button 
           onClick={() => setShowModal(true)} 
-          className={`btn ${gameFinished ? 'btn-cyan' : 'btn-accent'} glow ${gameFinished ? 'animate-pulse' : ''} w-full py-4`}
+          className={`btn ${gameFinished ? 'btn-cyan' : 'btn-accent'} glow ${gameFinished ? 'animate-pulse' : ''} w-full py-4 md:py-5 md:text-lg`}
         >
           <FaCheck className="text-xl" />
           <span className="text-lg">Завершить игру</span>
@@ -396,7 +398,7 @@ const GameBoard = ({ teams, resting, onGameEnd, settings }) => {
         
         <button 
           onClick={resetScores} 
-          className="btn bg-gray-200 text-gray-800 hover:bg-gray-300 transition-colors w-full py-3"
+          className="btn bg-gray-200 text-gray-800 hover:bg-gray-300 transition-colors w-full py-3 md:py-5 md:text-lg"
           disabled={gameFinished && showModal}
         >
           <FaUndo className="text-xl" />
@@ -405,23 +407,24 @@ const GameBoard = ({ teams, resting, onGameEnd, settings }) => {
       </div>
 
       {/* История счёта */}
-      <div className="mt-6 p-4 rounded-xl glass-effect md:w-full">
+      <div className="mt-6 md:mt-8 p-4 md:p-6 rounded-xl glass-effect md:w-full">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold">История счёта</h3>
+          <h3 className="text-lg md:text-xl font-semibold">История счёта</h3>
           <button
             onClick={() => setShowScoreHistory(!showScoreHistory)}
-            className="btn btn-sm btn-ghost"
+            className="btn btn-sm md:btn-md btn-ghost"
           >
             <FaHistory className="text-xl" />
+            <span className="hidden md:inline ml-2">{showScoreHistory ? 'Скрыть' : 'Показать'}</span>
           </button>
         </div>
         
         {showScoreHistory && (
-          <div className="space-y-2 max-h-48 overflow-y-auto">
+          <div className="space-y-2 max-h-48 md:max-h-64 overflow-y-auto">
             {scoreHistory.map((entry, index) => (
               <div 
                 key={index}
-                className={`flex items-center justify-between p-2 rounded ${entry.isPositive ? 'bg-green-100/10' : 'bg-red-100/10'}`}
+                className={`flex items-center justify-between p-2 md:p-3 rounded ${entry.isPositive ? 'bg-green-100/10' : 'bg-red-100/10'} md:text-lg`}
               >
                 <span className="font-medium">{entry.team}</span>
                 <span className="text-sm">{entry.score1} : {entry.score2}</span>
