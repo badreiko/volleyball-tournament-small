@@ -218,11 +218,14 @@ const App = () => {
 
   // --- Функция для логики запуска нового турнира ---
   const startNewTournament = useCallback(async (playersList) => {
+    console.log('Starting new tournament with players:', playersList);
     await clearTournamentState();
     setPlayers(playersList);
 
     // Генерация команд с балансировкой
-    const newTeams = generateTeams(playersList, settings?.useBalancing);
+    console.log('Generating teams with balancing:', settings?.useBalancing);
+    const newTeams = await generateTeams(playersList, settings?.useBalancing);
+    console.log('Generated teams:', newTeams);
     setTeams(newTeams);
 
     // Определение формата
