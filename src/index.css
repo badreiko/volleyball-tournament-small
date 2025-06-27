@@ -95,4 +95,9 @@
   .glow {
     animation: pulseGlow 2s infinite ease-in-out;
   }
+  
+  /* Sidebar full height */
+  .sidebar-full-height {
+    min-height: 100vh;
+  }
 }

@@ -820,7 +820,7 @@ const App = () => {
       )}
 
       {/* Sidebar для desktop */}
-      <aside className={`hidden md:block md:w-64 ${themeClasses.sidebar} shadow-md md:h-screen md:sticky md:top-0 z-40 md:border-r shrink-0 transition-colors duration-300`}>
+      <aside className={`hidden md:block md:w-64 ${themeClasses.sidebar} sidebar-full-height shadow-md md:border-r shrink-0 transition-colors duration-300`}>
         <div className="p-4 border-b border-[#0B8E8D]/20 flex flex-col gap-3">
           <div className="flex flex-col items-center mb-3">
             <img src={logoSvg} alt="Volleyball Tournament Logo" className="h-40 mb-2" />
