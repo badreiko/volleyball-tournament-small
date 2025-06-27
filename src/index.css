@@ -47,7 +47,11 @@
     @apply bg-gradient-to-br from-darkPurple to-darkBlue;
   }
   .input-field {
-    @apply w-full p-3 border border-darkBlue/30 rounded-lg bg-peach/30 text-darkBlue placeholder-darkBlue/50 focus:outline-none focus:ring-2 focus:ring-cyan focus:border-transparent transition-all;
+    @apply w-full p-3 border border-darkBlue/30 rounded-lg bg-peach/30 text-darkBlue placeholder-darkBlue/50 focus:outline-none focus:ring-2 focus:ring-cyan focus:ring-inset focus:border-transparent transition-all;
+  }
+  
+  body.dark .input-field {
+    @apply border-gray-600 bg-gray-700 text-white placeholder-gray-400 focus:ring-cyan;
   }
   .table-row {
     @apply border-b border-darkBlue/30 hover:bg-cyan/10 transition-colors;
