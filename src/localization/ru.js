@@ -126,6 +126,14 @@ export default {
     place: "Место",
     team: "Команда",
     points: "Очки",
+    wins: "Победы",
+    losses: "Поражения",
+    gamesPlayed: "Игр сыграно",
+    scoreDiff: "Разность очков",
+    setsWon: "Сетов выиграно",
+    setsLost: "Сетов проиграно",
+    showDetails: "Показать детали",
+    hideDetails: "Скрыть детали",
   },
 
   // История турниров

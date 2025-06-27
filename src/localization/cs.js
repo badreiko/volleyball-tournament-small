@@ -126,6 +126,14 @@ export default {
     place: "Místo",
     team: "Tým",
     points: "Body",
+    wins: "Výhry",
+    losses: "Prohry",
+    gamesPlayed: "Odehráno zápasů",
+    scoreDiff: "Rozdíl bodů",
+    setsWon: "Vyhráno setů",
+    setsLost: "Prohráno setů",
+    showDetails: "Zobrazit detaily",
+    hideDetails: "Skrýt detaily",
   },
 
   // Tournament history
