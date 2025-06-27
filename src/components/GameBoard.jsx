@@ -526,17 +526,17 @@ const GameBoard = ({ teams, resting, onGameEnd, settings, format, currentRound =
                 </button>
               </div>
             </div>
-            <div className="modal-body p-6 bg-white rounded-b-xl">
-              <div className="bg-gradient-to-r from-cyan/10 to-darkBlue/5 p-4 rounded-lg mb-6">
+            <div className="modal-body p-6 bg-white dark:bg-gray-800 rounded-b-xl">
+              <div className="bg-gradient-to-r from-cyan/20 to-darkBlue/15 dark:from-cyan/30 dark:to-darkBlue/25 border border-cyan/30 dark:border-cyan/50 p-4 rounded-lg mb-6">
                 <div className="flex justify-between items-center">
                   <div>
-                    <h3 className="text-xl mb-2">{t('gameBoard.finalScore')}</h3>
-                    <p className="text-3xl font-bold">{score1} : {score2}</p>
+                    <h3 className="text-xl mb-2 text-darkBlue dark:text-white font-semibold">{t('gameBoard.finalScore')}</h3>
+                    <p className="text-3xl font-bold text-darkBlue dark:text-white">{score1} : {score2}</p>
                   </div>
                   {prediction && (
                     <div className="text-right">
-                      <p className="text-sm opacity-70 mb-1">{t('gameBoard.prediction')}</p>
-                      <p className="text-xl font-bold">{prediction.predictedScore1} : {prediction.predictedScore2}</p>
+                      <p className="text-sm text-darkBlue/70 dark:text-white/70 mb-1">{t('gameBoard.prediction')}</p>
+                      <p className="text-xl font-bold text-darkBlue/80 dark:text-white/90">{prediction.predictedScore1} : {prediction.predictedScore2}</p>
                     </div>
                   )}
                 </div>
