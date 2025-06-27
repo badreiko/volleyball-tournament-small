@@ -164,6 +164,14 @@ export default {
     deleteTournament: "Удалить турнир",
     confirmDelete: "Вы уверены, что хотите удалить этот турнир?",
     deleteWarning: "Это действие нельзя отменить!",
+    tournamentsCount: "турниров",
+    noHistoryDesc: "Начните первый турнир, чтобы увидеть его здесь после завершения",
+    noSearchResults: "Турниры не найдены",
+    tryDifferentSearch: "Попробуйте изменить поисковый запрос",
+    sortNewest: "Сначала новые",
+    sortOldest: "Сначала старые",
+    sortByTeams: "По количеству команд",
+    sortByGames: "По количеству игр",
   },
 
   // Настройки

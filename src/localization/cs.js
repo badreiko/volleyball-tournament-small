@@ -164,6 +164,14 @@ export default {
     deleteTournament: "Smazat turnaj",
     confirmDelete: "Opravdu chcete smazat tento turnaj?",
     deleteWarning: "Tuto akci nelze vrátit zpět!",
+    tournamentsCount: "turnajů",
+    noHistoryDesc: "Začněte první turnaj, abyste jej zde viděli po dokončení",
+    noSearchResults: "Turnaje nenalezeny",
+    tryDifferentSearch: "Zkuste změnit vyhledávací dotaz",
+    sortNewest: "Nejnovější první",
+    sortOldest: "Nejstarší první",
+    sortByTeams: "Podle počtu týmů",
+    sortByGames: "Podle počtu zápasů",
   },
 
   // Settings
