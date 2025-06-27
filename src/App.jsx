@@ -79,9 +79,9 @@ const App = () => {
   // --- Эффект для настройки темной темы ---
   useEffect(() => {
     if (darkMode) {
-      document.documentElement.classList.add('dark');
+      document.body.classList.add('dark');
     } else {
-      document.documentElement.classList.remove('dark');
+      document.body.classList.remove('dark');
     }
     localStorage.setItem('darkMode', darkMode.toString());
   }, [darkMode]);
