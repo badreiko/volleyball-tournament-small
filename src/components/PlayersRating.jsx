@@ -163,7 +163,7 @@ const PlayersRating = ({ onViewPlayerStats }) => {
                     }`}>
                       {index + 1}
                     </span>
-                    <span className={index < 3 ? 'text-darkBlue font-semibold' : 'text-darkBlue'}>
+                    <span className={index < 3 ? 'text-darkBlue dark:text-white font-semibold' : 'text-darkBlue dark:text-white'}>
                       {player.name}
                     </span>
                   </td>
