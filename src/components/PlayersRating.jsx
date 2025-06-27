@@ -99,7 +99,7 @@ const PlayersRating = ({ onViewPlayerStats }) => {
 
       {/* Таблица с рейтингами */}
       {playersData.length > 0 ? (
-        <div className="overflow-x-auto bg-white rounded-lg shadow">
+        <div className="overflow-x-auto bg-white dark:bg-gray-800 rounded-lg shadow">
           <table className="w-full text-left">
             <thead>
               <tr className="bg-gradient-to-r from-darkBlue to-cyan text-white">
@@ -167,10 +167,10 @@ const PlayersRating = ({ onViewPlayerStats }) => {
                       {player.name}
                     </span>
                   </td>
-                  <td className="p-3">{player.rating}</td>
-                  <td className="p-3 hidden md:table-cell">{player.totalGames}</td>
-                  <td className="p-3 hidden md:table-cell">{player.totalWins}</td>
-                  <td className="p-3">{(player.winRate * 100).toFixed(1)}%</td>
+                  <td className="p-3 text-darkBlue dark:text-white">{player.rating}</td>
+                  <td className="p-3 hidden md:table-cell text-darkBlue dark:text-white">{player.totalGames}</td>
+                  <td className="p-3 hidden md:table-cell text-darkBlue dark:text-white">{player.totalWins}</td>
+                  <td className="p-3 text-darkBlue dark:text-white">{(player.winRate * 100).toFixed(1)}%</td>
                   <td className="p-3 text-center">
                     <button
                       onClick={() => onViewPlayerStats(player.name)}
@@ -186,9 +186,9 @@ const PlayersRating = ({ onViewPlayerStats }) => {
           </table>
         </div>
       ) : (
-        <div className="bg-white p-8 rounded-lg shadow text-center">
-          <p className="text-darkBlue text-lg">{t('playersRating.noRatings')}</p>
-          <p className="text-darkBlue/60 mt-2">{t('playersRating.noRatingsMessage')}</p>
+        <div className="bg-white dark:bg-gray-800 p-8 rounded-lg shadow text-center">
+          <p className="text-darkBlue dark:text-white text-lg">{t('playersRating.noRatings')}</p>
+          <p className="text-darkBlue/60 dark:text-white/60 mt-2">{t('playersRating.noRatingsMessage')}</p>
         </div>
       )}
     </div>
