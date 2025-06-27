@@ -131,7 +131,8 @@ const App = () => {
         pointsForWin: 3,
         pointsForLoseGood: 2,
         pointsForLoseBad: 1,
-        useTotalPointsForTie: true
+        useTotalPointsForTie: true,
+        useSetBasedScoringForFull: true // Для полных команд используем простую систему: 1 очко за выигранный сет
       };
       
       setSettings(defaultSettings);
@@ -244,57 +245,91 @@ const App = () => {
 
   // --- Функция для логики запуска нового турнира ---
   const startNewTournament = useCallback(async (playersList) => {
-    await clearTournamentState();
-    setPlayers(playersList);
+    try {
+      console.log('🔄 Starting new tournament with players:', playersList);
+      
+      // Clear existing tournament state first
+      await clearTournamentState();
+      console.log('✅ Previous tournament state cleared');
+      
+      // Clear all local state before setting new values
+      setPlayers([]);
+      setTeams([]);
+      setGames([]);
+      setResults([]);
+      setCurrentGameTeams([]);
+      setRestingTeams([]);
+      setFormat(null);
+      setFullSchedule([]);
+      setCurrentRound(0);
+      setSelectedPlayer(null);
+      
+      // Now set the new players
+      setPlayers(playersList);
 
-    // Генерация команд с балансировкой
-    const newTeams = await generateTeams(playersList, settings?.useBalancing);
-    setTeams(newTeams);
+      // Генерация команд с балансировкой
+      const newTeams = await generateTeams(playersList, settings?.useBalancing);
+      setTeams(newTeams);
 
-    // Определение формата
-    let newFormat;
-    if (playersList.length <= 14) newFormat = 'full';
-    else if (playersList.length === 15 || playersList.length === 18) newFormat = 'triples';
-    else newFormat = 'doubles';
-    setFormat(newFormat);
+      // Определение формата
+      let newFormat;
+      if (playersList.length <= 14) newFormat = 'full';
+      else if (playersList.length === 15 || playersList.length === 18) newFormat = 'triples';
+      else newFormat = 'doubles';
+      setFormat(newFormat);
 
-    // Инициализация результатов
-    const initialResults = newTeams.map(team => ({
-      name: team.name,
-      points: 0,
-      wins: 0,
-      scoreDiff: 0,
-      gamesPlayed: 0,
-      setsWon: 0,
-      setsLost: 0
-    }));
-    setResults(initialResults);
+      // Инициализация результатов
+      const initialResults = newTeams.map(team => ({
+        name: team.name,
+        points: 0,
+        wins: 0,
+        scoreDiff: 0,
+        gamesPlayed: 0,
+        setsWon: 0,
+        setsLost: 0
+      }));
+      setResults(initialResults);
 
-    // Генерация полного расписания и установка первого раунда
-    const schedule = generateFullSchedule(newTeams, newFormat);
-    setFullSchedule(schedule);
-    setCurrentRound(0);
-    if (schedule && schedule.length > 0) {
-      setCurrentGameTeams(schedule[0].gameTeams);
-      setRestingTeams(schedule[0].resting || []);
+      // Генерация полного расписания и установка первого раунда
+      const schedule = generateFullSchedule(newTeams, newFormat);
+      setFullSchedule(schedule);
+      setCurrentRound(0);
+      if (schedule && schedule.length > 0) {
+        setCurrentGameTeams(schedule[0].gameTeams);
+        setRestingTeams(schedule[0].resting || []);
+      }
+
+      setGames([]);
+      setScreen('game');
+      
+      // Сбрасываем диалог подтверждения
+      setShowResetConfirm(false);
+      setPendingPlayersList(null);
+      
+      // Показать уведомление
+      showNotification(
+        t('notifications.tournamentCreated'), 
+        t('notifications.teamsFormedMessage', { 
+          games: schedule.length, 
+          format: t(`tournamentFormat.${newFormat}`) 
+        }),
+        'success'
+      );
+      
+      console.log('✅ New tournament started successfully');
+    } catch (error) {
+      console.error('❌ Error starting new tournament:', error);
+      
+      // Clear confirmation dialog state in case of error
+      setShowResetConfirm(false);
+      setPendingPlayersList(null);
+      
+      showNotification(
+        t('notifications.error'), 
+        'Failed to start new tournament. Please try again.', 
+        'error'
+      );
     }
-
-    setGames([]);
-    setScreen('game');
-    
-    // Сбрасываем диалог подтверждения
-    setShowResetConfirm(false);
-    setPendingPlayersList(null);
-    
-    // Показать уведомление
-    showNotification(
-      t('notifications.tournamentCreated'), 
-      t('notifications.teamsFormedMessage', { 
-        games: schedule.length, 
-        format: t(`tournamentFormat.${newFormat}`) 
-      }),
-      'success'
-    );
   }, [settings, showNotification]);
 
   // --- Запуск турнира с проверкой наличия активного турнира ---
@@ -333,21 +368,43 @@ const App = () => {
       // Если у нас есть ожидающий список игроков, запускаем новый турнир с ними
       startNewTournament(pendingPlayersList);
     } else {
-      // Иначе просто сбрасываем текущий турнир
-      await clearTournamentState();
-      setPlayers([]);
-      setTeams([]);
-      setGames([]);
-      setResults([]);
-      setCurrentGameTeams([]);
-      setRestingTeams([]);
-      setFormat(null);
-      setFullSchedule([]);
-      setCurrentRound(0);
-      setScreen('input');
-      setShowResetConfirm(false);
-      
-      showNotification(t('notifications.newTournament'), t('notifications.newTournamentMessage'), 'info');
+      try {
+        // Иначе просто сбрасываем текущий турнир
+        console.log('🔄 Starting tournament reset...');
+        
+        // First clear the storage
+        await clearTournamentState();
+        console.log('✅ Tournament state cleared from storage');
+        
+        // Then clear all local state variables
+        setPlayers([]);
+        setTeams([]);
+        setGames([]);
+        setResults([]);
+        setCurrentGameTeams([]);
+        setRestingTeams([]);
+        setFormat(null);
+        setFullSchedule([]);
+        setCurrentRound(0);
+        setSelectedPlayer(null); // Clear selected player
+        setScreen('input');
+        
+        // Clear confirmation dialog state
+        setShowResetConfirm(false);
+        setPendingPlayersList(null);
+        
+        console.log('✅ All local state cleared');
+        
+        showNotification(t('notifications.newTournament'), t('notifications.newTournamentMessage'), 'info');
+        console.log('✅ Tournament reset completed successfully');
+      } catch (error) {
+        console.error('❌ Error during tournament reset:', error);
+        showNotification(
+          t('notifications.error'), 
+          'Failed to reset tournament. Please refresh the page.', 
+          'error'
+        );
+      }
     }
   }, [pendingPlayersList, startNewTournament, showNotification]);
 
@@ -394,17 +451,26 @@ const App = () => {
     const team1SetsWon = set1Team1Win ? 1 : 0;
     const team2SetsWon = set1Team2Win ? 1 : 0;
 
-    // Очки на основе настроек
-    const pointsForWin = settings?.pointsForWin || 3;
-    const pointsForLoseGood = settings?.pointsForLoseGood || 2;
-    const pointsForLoseBad = settings?.pointsForLoseBad || 1;
+    // Определяем систему очков в зависимости от формата и настроек
+    let points1, points2;
     
-    // Определяем очки команд на основе результата
-    const loserScore = winner === 0 ? score2 : score1;
-    const loserPoints = loserScore >= 10 ? pointsForLoseGood : pointsForLoseBad;
-    
-    const points1 = winner === 0 ? pointsForWin : loserPoints;
-    const points2 = winner === 1 ? pointsForWin : loserPoints;
+    if (format === 'full' && settings?.useSetBasedScoringForFull) {
+      // Для полных команд (7 на 7) используем простую систему: 1 очко за выигранный сет
+      points1 = team1SetsWon; // 1 если выиграли, 0 если проиграли
+      points2 = team2SetsWon; // 1 если выиграли, 0 если проиграли
+    } else {
+      // Для остальных форматов или если отключена система сетов используем традиционную систему очков за игры
+      const pointsForWin = settings?.pointsForWin || 3;
+      const pointsForLoseGood = settings?.pointsForLoseGood || 2;
+      const pointsForLoseBad = settings?.pointsForLoseBad || 1;
+      
+      // Определяем очки команд на основе результата
+      const loserScore = winner === 0 ? score2 : score1;
+      const loserPoints = loserScore >= 10 ? pointsForLoseGood : pointsForLoseBad;
+      
+      points1 = winner === 0 ? pointsForWin : loserPoints;
+      points2 = winner === 1 ? pointsForWin : loserPoints;
+    }
 
     const newGame = {
       teams,
@@ -423,67 +489,50 @@ const App = () => {
     // Вычисляем новые значения games/results
     const updatedGames = [...games, newGame];
     const updatedResults = results.map((r) => {
+      // Проверка для обычных команд
       const teamIdx = teams.findIndex((t) => t.name === r.name);
-      if (teamIdx === -1) return r; // не участвовала в игре
+      if (teamIdx !== -1) {
+        return {
+          ...r,
+          points: r.points + (teamIdx === 0 ? points1 : points2),
+          wins: r.wins + (teamIdx === winner ? 1 : 0),
+          losses: (r.losses || 0) + (teamIdx === loser ? 1 : 0),
+          scoreDiff: r.scoreDiff + (teamIdx === 0 ? score1 - score2 : score2 - score1),
+          gamesPlayed: r.gamesPlayed + 1,
+          setsWon: r.setsWon + (teamIdx === 0 ? team1SetsWon : team2SetsWon),
+          setsLost: r.setsLost + (teamIdx === 0 ? team2SetsWon : team1SetsWon),
+        };
+      }
+      
+      // Проверка для составных команд
+      let teamFound = false;
+      let isTeam1 = false;
+      
+      if (teams[0].originalTeams) {
+        teamFound = teams[0].originalTeams.some(ot => ot.name === r.name);
+        if (teamFound) isTeam1 = true;
+      }
+      
+      if (!teamFound && teams[1].originalTeams) {
+        teamFound = teams[1].originalTeams.some(ot => ot.name === r.name);
+      }
+      
+      if (!teamFound) return r; // Команда не участвовала в игре
+      
       return {
         ...r,
-        points: r.points + (teamIdx === 0 ? points1 : points2),
-        wins: r.wins + (teamIdx === winner ? 1 : 0),
-        losses: r.losses + (teamIdx === loser ? 1 : 0),
-        scoreDiff: r.scoreDiff + (teamIdx === 0 ? score1 - score2 : score2 - score1),
+        points: r.points + (isTeam1 ? points1 : points2),
+        wins: r.wins + (isTeam1 === (winner === 0) ? 1 : 0),
+        losses: (r.losses || 0) + (isTeam1 === (loser === 0) ? 1 : 0),
+        scoreDiff: r.scoreDiff + (isTeam1 ? score1 - score2 : score2 - score1),
         gamesPlayed: r.gamesPlayed + 1,
-        setsWon: r.setsWon + (teamIdx === 0 ? team1SetsWon : team2SetsWon),
-        setsLost: r.setsLost + (teamIdx === 0 ? team2SetsWon : team1SetsWon),
+        setsWon: r.setsWon + (isTeam1 ? team1SetsWon : team2SetsWon),
+        setsLost: r.setsLost + (isTeam1 ? team2SetsWon : team1SetsWon),
       };
     });
 
     setGames(updatedGames);
     setResults(updatedResults);
-
-    setResults((prev) =>
-	  prev.map((r) => {
-		// Проверка для обычных команд
-		const teamIdx = teams.findIndex((t) => t.name === r.name);
-		if (teamIdx !== -1) {
-		  return {
-			...r,
-			points: r.points + (teamIdx === 0 ? points1 : points2),
-			wins: r.wins + (teamIdx === winner ? 1 : 0),
-			losses: r.losses || 0 + (teamIdx === loser ? 1 : 0),
-			scoreDiff: r.scoreDiff + (teamIdx === 0 ? score1 - score2 : score2 - score1),
-			gamesPlayed: r.gamesPlayed + 1,
-			setsWon: r.setsWon + (teamIdx === 0 ? team1SetsWon : team2SetsWon),
-			setsLost: r.setsLost + (teamIdx === 0 ? team2SetsWon : team1SetsWon),
-		  };
-		}
-		
-		// Проверка для составных команд
-		let teamFound = false;
-		let isTeam1 = false;
-		
-		if (teams[0].originalTeams) {
-		  teamFound = teams[0].originalTeams.some(ot => ot.name === r.name);
-		  if (teamFound) isTeam1 = true;
-		}
-		
-		if (!teamFound && teams[1].originalTeams) {
-		  teamFound = teams[1].originalTeams.some(ot => ot.name === r.name);
-		}
-		
-		if (!teamFound) return r; // Команда не участвовала в игре
-		
-		return {
-		  ...r,
-		  points: r.points + (isTeam1 ? points1 : points2),
-		  wins: r.wins + (isTeam1 === (winner === 0) ? 1 : 0),
-		  losses: (r.losses || 0) + (isTeam1 === (loser === 0) ? 1 : 0),
-		  scoreDiff: r.scoreDiff + (isTeam1 ? score1 - score2 : score2 - score1),
-		  gamesPlayed: r.gamesPlayed + 1,
-		  setsWon: r.setsWon + (isTeam1 ? team1SetsWon : team2SetsWon),
-		  setsLost: r.setsLost + (isTeam1 ? team2SetsWon : team1SetsWon),
-		};
-	  })
-	);
 
     // Проверка завершения турнира по полному расписанию
     const isTournamentOver = currentRound + 1 >= fullSchedule.length;

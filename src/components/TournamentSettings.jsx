@@ -16,7 +16,8 @@ const TournamentSettings = ({ onBack, onSave }) => {
     showPredictions: true,
     pointsForWin: 3,
     pointsForLoseGood: 2, // при 10+ очках
-    pointsForLoseBad: 1 // при менее 10 очках
+    pointsForLoseBad: 1, // при менее 10 очках
+    useSetBasedScoringForFull: true // Для полных команд используем простую систему: 1 очко за выигранный сет
   });
   
   // Загружаем настройки из localStorage при монтировании
@@ -259,6 +260,28 @@ const TournamentSettings = ({ onBack, onSave }) => {
                     />
                 </div>
              </div>
+            </div>
+          </div>
+          
+          {/* Настройки системы начисления очков */}
+          <div>
+            <h3 className="text-lg font-semibold text-darkBlue mb-4 border-b border-darkBlue/20 pb-2">
+              {t('settings.scoringSystem')}
+            </h3>
+            
+            <div className="space-y-4">
+              <div className="flex justify-between items-center p-3 bg-gradient-to-r from-cyan/10 to-darkBlue/5 rounded-lg">
+                <div>
+                  <h4 className="font-medium text-darkBlue">{t('settings.useSetBasedForFull')}</h4>
+                  <p className="text-sm text-darkBlue/70">{t('settings.setBasedDescription')}</p>
+                </div>
+                <button 
+                  onClick={() => handleToggle('useSetBasedScoringForFull')}
+                  className="text-2xl text-cyan"
+                >
+                  {settings.useSetBasedScoringForFull ? <FaToggleOn /> : <FaToggleOff />}
+                </button>
+              </div>
             </div>
           </div>
           

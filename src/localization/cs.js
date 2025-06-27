@@ -170,6 +170,9 @@ export default {
     forWin: "Za výhru",
     forLoseGood: "Za prohru (10+ bodů)",
     forLoseBad: "Za prohru (méně než 10 bodů)",
+    scoringSystem: "Systém bodování",
+    useSetBasedForFull: "Použít bodování podle setů pro kompletní týmy",
+    setBasedDescription: "1 bod za vyhraný set (místo tradičního systému 3-2-1 bodů)",
     saveSettings: "Uložit nastavení",
   },
 
