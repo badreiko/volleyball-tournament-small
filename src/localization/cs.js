@@ -22,6 +22,8 @@ export default {
     search: "Hledat",
     filter: "Filtrovat",
     sort: "Seřadit",
+    show: "Zobrazit",
+    hide: "Skrýt",
   },
 
   // Headers and menu
