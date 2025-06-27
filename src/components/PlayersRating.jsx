@@ -155,14 +155,15 @@ const PlayersRating = ({ onViewPlayerStats }) => {
                   }`}
                 >
                   <td className="p-3 flex items-center">
-                    {index < 3 && (
-                      <span className={`w-6 h-6 rounded-full flex items-center justify-center mr-2 text-white ${
-                        index === 0 ? 'bg-yellow-500' : index === 1 ? 'bg-gray-400' : 'bg-amber-700'
-                      }`}>
-                        {index + 1}
-                      </span>
-                    )}
-                    <span className={index < 3 ? 'text-darkBlue' : ''}>
+                    <span className={`w-6 h-6 rounded-full flex items-center justify-center mr-2 text-white text-sm font-bold ${
+                      index === 0 ? 'bg-yellow-500' : 
+                      index === 1 ? 'bg-gray-400' : 
+                      index === 2 ? 'bg-amber-700' :
+                      'bg-darkBlue'
+                    }`}>
+                      {index + 1}
+                    </span>
+                    <span className={index < 3 ? 'text-darkBlue font-semibold' : 'text-darkBlue'}>
                       {player.name}
                     </span>
                   </td>
