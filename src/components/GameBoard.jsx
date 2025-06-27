@@ -14,7 +14,7 @@ import { motion } from 'framer-motion';
 import { calculateTeamRating, predictGameResult } from '../utils/teamGenerator';
 import { t } from '../localization';
 
-const GameBoard = ({ teams, resting, onGameEnd, settings, currentRound = 0 }) => {
+const GameBoard = ({ teams, resting, onGameEnd, settings, format, currentRound = 0 }) => {
   const [score1, setScore1] = useState(0);
   const [score2, setScore2] = useState(0);
   const [timer, setTimer] = useState(settings?.roundDuration * 60 || 600);
@@ -33,7 +33,7 @@ const GameBoard = ({ teams, resting, onGameEnd, settings, currentRound = 0 }) =>
   const autoFinishTimerRef = useRef(null);
 
   // Получаем настройки из пропсов
-  const maxScore = settings?.maxScoreRounds?.[teams.length === 2 ? 'full' : 'triples'] || 25;
+  const maxScore = settings?.maxScoreRounds?.[format] || (format === 'triples' ? 15 : 25);
   const minPointDifference = settings?.minPointDifference || 2;
   
   // Получаем прогноз для текущей игры

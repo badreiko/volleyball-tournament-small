@@ -615,6 +615,7 @@ const App = () => {
             resting={restingTeams}
             onGameEnd={handleGameEnd}
             settings={settings}
+            format={format}
           />
         ) : null;
       case 'games':
