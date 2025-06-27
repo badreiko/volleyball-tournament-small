@@ -11,17 +11,20 @@ const PlayersRating = ({ onViewPlayerStats }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const ratings = getPlayerRatings();
-    
-    // Преобразуем объект с рейтингами в массив для удобной сортировки
-    const players = Object.entries(ratings).map(([name, data]) => ({
-      name,
-      ...data,
-      winRate: data.totalGames > 0 ? (data.totalWins / data.totalGames) : 0
-    }));
-    
-    setPlayersData(players);
-    setLoading(false);
+    const fetchRatings = async () => {
+      const ratings = await getPlayerRatings();
+      
+      // Преобразуем объект с рейтингами в массив для удобной сортировки
+      const players = Object.entries(ratings).map(([name, data]) => ({
+        name,
+        ...data,
+        winRate: data.totalGames > 0 ? (data.totalWins / data.totalGames) : 0
+      }));
+      
+      setPlayersData(players);
+      setLoading(false);
+    };
+    fetchRatings();
   }, []);
 
   // Функция сортировки
@@ -73,7 +76,7 @@ const PlayersRating = ({ onViewPlayerStats }) => {
   }
 
   return (
-    <div className="p-4 md:p-6">
+    <div className="p-4 md:p-6 pb-16">
       <h2 className="text-2xl font-bold text-darkBlue mb-6 flex items-center">
         <FaTrophy className="mr-3 text-cyan" /> {t('playersRating.title')}
       </h2>

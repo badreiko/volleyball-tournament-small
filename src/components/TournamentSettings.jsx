@@ -58,7 +58,7 @@ const TournamentSettings = ({ onBack, onSave }) => {
   };
   
   return (
-    <div className="p-4 md:p-6">
+    <div className="p-4 md:p-6 pb-16">
       <button onClick={onBack} className="mb-4 flex items-center text-darkBlue hover:text-cyan transition-colors">
         <FaArrowLeft className="mr-2" /> {t('common.back')}
       </button>

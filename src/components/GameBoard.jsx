@@ -214,7 +214,7 @@ const GameBoard = ({ teams, resting, onGameEnd, settings, currentRound = 0 }) =>
   };
 
   return (
-    <div className="p-4 md:p-6">
+    <div className="p-4 md:p-6 pb-16">
       <div className="card md:max-w-3xl lg:max-w-4xl mx-auto fade-in overflow-hidden">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl md:text-3xl font-bold text-darkBlue flex items-center">

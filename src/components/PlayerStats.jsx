@@ -21,11 +21,14 @@ const PlayerStats = ({ playerName, onBack }) => {
   const [activeTab, setActiveTab] = useState('overview');
   
   useEffect(() => {
-    if (playerName) {
-      const playerStats = getPlayerStats(playerName);
-      setStats(playerStats);
-      setLoading(false);
-    }
+    const fetchStats = async () => {
+      if (playerName) {
+        const playerStats = await getPlayerStats(playerName);
+        setStats(playerStats);
+        setLoading(false);
+      }
+    };
+    fetchStats();
   }, [playerName]);
   
   if (loading) {
@@ -51,7 +54,7 @@ const PlayerStats = ({ playerName, onBack }) => {
   const lastActive = stats.lastActive ? new Date(stats.lastActive).toLocaleDateString() : t('playerStats.unknown');
   
   return (
-    <div className="p-4 md:p-6">
+    <div className="p-4 md:p-6 pb-16">
       <button onClick={onBack} className="mb-4 flex items-center text-darkBlue hover:text-cyan transition-colors">
         <FaArrowLeft className="mr-2" /> {t('common.back')}
       </button>

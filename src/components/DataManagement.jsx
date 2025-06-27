@@ -9,8 +9,8 @@ const DataManagement = ({ onBack }) => {
   const [exportResult, setExportResult] = useState(null);
   const [showClearConfirm, setShowClearConfirm] = useState(false);
   
-  const handleExportData = () => {
-    const success = exportData();
+  const handleExportData = async () => {
+    const success = await exportData();
     setExportResult({
       success,
       message: success 
@@ -37,10 +37,10 @@ const DataManagement = ({ onBack }) => {
     }
     
     const reader = new FileReader();
-    reader.onload = (event) => {
+    reader.onload = async (event) => {
       try {
         const jsonData = event.target.result;
-        const success = importData(jsonData);
+        const success = await importData(jsonData);
         
         setImportResult({
           success,
@@ -74,13 +74,13 @@ const DataManagement = ({ onBack }) => {
     reader.readAsText(file);
   };
   
-  const handleClearData = () => {
-    clearTournamentState();
+  const handleClearData = async () => {
+    await clearTournamentState();
     window.location.reload(); // Перезагружаем страницу для обновления интерфейса
   };
   
   return (
-    <div className="p-4 md:p-6">
+    <div className="p-4 md:p-6 pb-16">
       <button onClick={onBack} className="mb-4 flex items-center text-darkBlue hover:text-cyan transition-colors">
         <FaArrowLeft className="mr-2" /> {t('common.back')}
       </button>

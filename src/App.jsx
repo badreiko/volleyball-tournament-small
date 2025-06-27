@@ -65,6 +65,7 @@ const App = () => {
   // --- UI состояния ---
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [darkMode, setDarkMode] = useState(() => localStorage.getItem('darkMode') === 'true');
+  const [forceUpdate, setForceUpdate] = useState(0);
   const [notifications, setNotifications] = useState([]);
   const [showDataImport, setShowDataImport] = useState(false);
   const [importFile, setImportFile] = useState(null);
@@ -140,39 +141,45 @@ const App = () => {
 
   // --- Загрузка состояния турнира ---
   useEffect(() => {
-    const savedState = loadTournamentState();
-    if (savedState) {
-      setPlayers(savedState.players || []);
-      setTeams(savedState.teams || []);
-      setGames(savedState.games || []);
-      setResults(savedState.results || []);
-      setFormat(savedState.format || null);
-      setScreen(savedState.screen || 'input');
-      setFullSchedule(savedState.fullSchedule || []);
-      setCurrentRound(savedState.currentRound || 0);
-      
-      if (savedState.currentRound !== undefined && savedState.fullSchedule && savedState.fullSchedule.length > 0) {
-        const roundInfo = savedState.fullSchedule[savedState.currentRound];
-        if (roundInfo) {
-          setCurrentGameTeams(roundInfo.gameTeams);
-          setRestingTeams(roundInfo.resting);
+    const fetchTournamentState = async () => {
+      const savedState = await loadTournamentState();
+      if (savedState) {
+        setPlayers(savedState.players || []);
+        setTeams(savedState.teams || []);
+        setGames(savedState.games || []);
+        setResults(savedState.results || []);
+        setFormat(savedState.format || null);
+        setScreen(savedState.screen || 'input');
+        setFullSchedule(savedState.fullSchedule || []);
+        setCurrentRound(savedState.currentRound || 0);
+        
+        if (savedState.currentRound !== undefined && savedState.fullSchedule && savedState.fullSchedule.length > 0) {
+          const roundInfo = savedState.fullSchedule[savedState.currentRound];
+          if (roundInfo) {
+            setCurrentGameTeams(roundInfo.gameTeams);
+            setRestingTeams(roundInfo.resting);
+          }
         }
       }
-    }
+    };
+    fetchTournamentState();
   }, []);
 
   // --- Сохранение состояния турнира ---
   useEffect(() => {
-    saveTournamentState({
-      screen,
-      players,
-      teams,
-      games,
-      results,
-      format,
-      fullSchedule,
-      currentRound
-    });
+    const saveState = async () => {
+      await saveTournamentState({
+        screen,
+        players,
+        teams,
+        games,
+        results,
+        format,
+        fullSchedule,
+        currentRound
+      });
+    };
+    saveState();
   }, [screen, players, teams, games, results, format, fullSchedule, currentRound]);
 
   // --- Функция для показа уведомлений ---
@@ -204,9 +211,14 @@ const App = () => {
     setNotifications(prev => prev.filter(n => n.id !== id));
   }, []);
 
+  // --- Функция для обновления языка без перезагрузки страницы ---
+  const handleLanguageUpdate = useCallback(() => {
+    setForceUpdate(prev => prev + 1);
+  }, []);
+
   // --- Функция для логики запуска нового турнира ---
-  const startNewTournament = useCallback((playersList) => {
-    clearTournamentState();
+  const startNewTournament = useCallback(async (playersList) => {
+    await clearTournamentState();
     setPlayers(playersList);
 
     // Генерация команд с балансировкой
@@ -275,7 +287,7 @@ const App = () => {
   }, [players, teams, startNewTournament]);
 
   // --- Сброс турнира ---
-  const handleNewTournament = useCallback(() => {
+  const handleNewTournament = useCallback(async () => {
     // Проверка, есть ли активный турнир
     const isActiveTournament = players.length > 0 && teams.length > 0;
     
@@ -290,13 +302,13 @@ const App = () => {
   }, [players, teams]);
 
   // --- Подтверждение сброса турнира ---
-  const confirmResetTournament = useCallback(() => {
+  const confirmResetTournament = useCallback(async () => {
     if (pendingPlayersList) {
       // Если у нас есть ожидающий список игроков, запускаем новый турнир с ними
       startNewTournament(pendingPlayersList);
     } else {
       // Иначе просто сбрасываем текущий турнир
-      clearTournamentState();
+      await clearTournamentState();
       setPlayers([]);
       setTeams([]);
       setGames([]);
@@ -451,17 +463,19 @@ const App = () => {
     const isTournamentOver = currentRound + 1 >= fullSchedule.length;
 
     if (isTournamentOver) {
-      saveTournamentToHistory({
-        teams,
-        games: updatedGames,
-        results: updatedResults,
-      });
-      setScreen('results');
-      showNotification(
-        t('notifications.tournamentFinished'), 
-        t('notifications.tournamentFinishedMessage'), 
-        'success'
-      );
+      (async () => {
+        await saveTournamentToHistory({
+          teams,
+          games: updatedGames,
+          results: updatedResults,
+        });
+        setScreen('results');
+        showNotification(
+          t('notifications.tournamentFinished'), 
+          t('notifications.tournamentFinishedMessage'), 
+          'success'
+        );
+      })();
     } else {
       // Переход к следующему раунду полного расписания
       const nextRound = currentRound + 1;
@@ -505,8 +519,8 @@ const App = () => {
   }, []);
 
   // --- Экспорт данных ---
-  const handleExportData = useCallback(() => {
-    const success = exportData();
+  const handleExportData = useCallback(async () => {
+    const success = await exportData();
     if (success) {
       showNotification(
         t('notifications.dataExport'), 
@@ -523,7 +537,7 @@ const App = () => {
   }, [showNotification]);
 
   // --- Импорт данных ---
-  const handleImportData = useCallback(() => {
+  const handleImportData = useCallback(async () => {
     if (!importFile) {
       showNotification(
         t('notifications.importError'), 
@@ -536,10 +550,10 @@ const App = () => {
     setIsDataLoading(true);
     
     const reader = new FileReader();
-    reader.onload = (event) => {
+    reader.onload = async (event) => {
       try {
         const jsonData = event.target.result;
-        const success = importData(jsonData);
+        const success = await importData(jsonData);
         
         if (success) {
           showNotification(
@@ -683,7 +697,7 @@ const App = () => {
           <h1 className="text-xl font-bold">{t('header.title')}</h1>
         </div>
         <div className="flex items-center gap-3">
-          <LanguageSwitcher className="mr-2" />
+          <LanguageSwitcher className="mr-2" darkMode={darkMode} onLanguageChange={handleLanguageUpdate} />
           <button 
             onClick={toggleDarkMode}
             className="p-2 rounded-full hover:bg-white/20 transition-colors"
@@ -815,7 +829,7 @@ const App = () => {
             <FaVolleyballBall className="mr-2 text-[#0B8E8D]" /> {t('header.title')}
           </h1>
           <div className="flex justify-between items-center">
-            <LanguageSwitcher />
+            <LanguageSwitcher darkMode={darkMode} onLanguageChange={handleLanguageUpdate} />
             <button 
               onClick={toggleDarkMode}
               className={`p-2 rounded-full ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-200'} transition-colors`}
@@ -882,7 +896,7 @@ const App = () => {
       </aside>
  
       {/* Основное содержимое */}
-      <main className="flex-1 overflow-y-auto min-h-screen">
+      <main className="flex-1 overflow-y-auto pb-4">
         {renderContent()}
       </main>
  

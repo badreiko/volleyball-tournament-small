@@ -6,6 +6,10 @@
   html, body {
     font-family: 'Orbitron', system-ui, sans-serif;
     min-height: 100vh;
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    overflow-x: hidden;
   }
   
   /* Фоновый паттерн */

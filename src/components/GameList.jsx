@@ -162,7 +162,7 @@ const GameList = ({ games, onBack, teams, fullSchedule, currentRound, onStartGam
   const teamFilterOptions = Array.from(uniqueTeams).sort();
 
   return (
-    <div className="p-4 md:p-6">
+    <div className="p-4 md:p-6 pb-16">
       <div className="flex items-center mb-6">
         <button 
           onClick={onBack} 
