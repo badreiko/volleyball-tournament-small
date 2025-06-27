@@ -13,13 +13,15 @@ const playerRatingsCol = collection(db, 'playerRatings');
  */
 export const saveTournamentState = async (state) => {
   try {
+    console.log('💾 Saving tournament state to Firestore:', state);
     await setDoc(tournamentStateRef, state);
-    console.log("Состояние турнира успешно сохранено в Firestore.");
+    console.log("✅ Состояние турнира успешно сохранено в Firestore.");
   } catch (e) {
-    console.error("Ошибка сохранения состояния турнира в Firestore:", e);
+    console.error("❌ Ошибка сохранения состояния турнира в Firestore:", e);
     // Fallback to localStorage
+    console.log('🔄 Falling back to localStorage...');
     localStorage.setItem('tournamentState', JSON.stringify(state));
-    console.log("Состояние турнира сохранено в localStorage.");
+    console.log("✅ Состояние турнира сохранено в localStorage.");
   }
 };
 
@@ -29,18 +31,42 @@ export const saveTournamentState = async (state) => {
  */
 export const loadTournamentState = async () => {
   try {
+    console.log('🔍 Attempting to load tournament state from Firestore...');
     const docSnap = await getDoc(tournamentStateRef);
     if (docSnap.exists()) {
-      return docSnap.data();
+      const data = docSnap.data();
+      console.log('✅ Tournament state loaded from Firestore:', data);
+      
+      // Check if the data is actually meaningful (not just an empty object from clearTournamentState)
+      const hasData = data && !data.cleared && (
+        (data.players && data.players.length > 0) ||
+        (data.teams && data.teams.length > 0) ||
+        (data.games && data.games.length > 0) ||
+        data.screen !== 'input'
+      );
+      
+      if (hasData) {
+        return data;
+      } else {
+        console.log('ℹ️ Firestore document exists but contains no meaningful tournament data');
+        return undefined;
+      }
     } else {
-      console.log("Состояние турнира не найдено в Firestore.");
+      console.log("ℹ️ Состояние турнира не найдено в Firestore.");
       return undefined;
     }
   } catch (e) {
-    console.error("Ошибка загрузки состояния турнира из Firestore:", e);
+    console.error("❌ Ошибка загрузки состояния турнира из Firestore:", e);
     // Fallback to localStorage
+    console.log('🔄 Falling back to localStorage...');
     const localData = localStorage.getItem('tournamentState');
-    return localData ? JSON.parse(localData) : undefined;
+    if (localData) {
+      console.log('✅ Tournament state loaded from localStorage');
+      return JSON.parse(localData);
+    } else {
+      console.log('ℹ️ No tournament state found in localStorage either');
+      return undefined;
+    }
   }
 };
 
@@ -49,10 +75,19 @@ export const loadTournamentState = async () => {
  */
 export const clearTournamentState = async () => {
   try {
-    await setDoc(tournamentStateRef, {}); // Clear by setting an empty object
-    console.log("Состояние турнира успешно очищено в Firestore.");
+    console.log('🗑️ Clearing tournament state from Firestore...');
+    // Clear by setting an empty object with a flag to indicate it's cleared
+    await setDoc(tournamentStateRef, { cleared: true, timestamp: new Date().toISOString() });
+    console.log("✅ Состояние турнира успешно очищено в Firestore.");
+    
+    // Also clear localStorage
+    localStorage.removeItem('tournamentState');
+    console.log("✅ Состояние турнира очищено из localStorage.");
   } catch (e) {
-    console.error("Ошибка очистки состояния турнира в Firestore:", e);
+    console.error("❌ Ошибка очистки состояния турнира в Firestore:", e);
+    // Still try to clear localStorage
+    localStorage.removeItem('tournamentState');
+    console.log("✅ Состояние турнира очищено из localStorage.");
   }
 };
 

@@ -142,24 +142,40 @@ const App = () => {
   // --- Загрузка состояния турнира ---
   useEffect(() => {
     const fetchTournamentState = async () => {
-      const savedState = await loadTournamentState();
-      if (savedState) {
-        setPlayers(savedState.players || []);
-        setTeams(savedState.teams || []);
-        setGames(savedState.games || []);
-        setResults(savedState.results || []);
-        setFormat(savedState.format || null);
-        setScreen(savedState.screen || 'input');
-        setFullSchedule(savedState.fullSchedule || []);
-        setCurrentRound(savedState.currentRound || 0);
+      console.log('🔄 Loading tournament state...');
+      try {
+        const savedState = await loadTournamentState();
+        console.log('📊 Loaded tournament state:', savedState);
         
-        if (savedState.currentRound !== undefined && savedState.fullSchedule && savedState.fullSchedule.length > 0) {
-          const roundInfo = savedState.fullSchedule[savedState.currentRound];
-          if (roundInfo) {
-            setCurrentGameTeams(roundInfo.gameTeams);
-            setRestingTeams(roundInfo.resting);
+        if (savedState && Object.keys(savedState).length > 0) {
+          console.log('✅ Found saved tournament state, restoring...');
+          setPlayers(savedState.players || []);
+          setTeams(savedState.teams || []);
+          setGames(savedState.games || []);
+          setResults(savedState.results || []);
+          setFormat(savedState.format || null);
+          setScreen(savedState.screen || 'input');
+          setFullSchedule(savedState.fullSchedule || []);
+          setCurrentRound(savedState.currentRound || 0);
+          
+          if (savedState.currentRound !== undefined && savedState.fullSchedule && savedState.fullSchedule.length > 0) {
+            const roundInfo = savedState.fullSchedule[savedState.currentRound];
+            if (roundInfo) {
+              setCurrentGameTeams(roundInfo.gameTeams);
+              setRestingTeams(roundInfo.resting);
+            }
           }
+          
+          console.log('✅ Tournament state restored successfully');
+          console.log('   - Players:', savedState.players?.length || 0);
+          console.log('   - Teams:', savedState.teams?.length || 0);
+          console.log('   - Games:', savedState.games?.length || 0);
+          console.log('   - Screen:', savedState.screen);
+        } else {
+          console.log('ℹ️ No saved tournament state found');
         }
+      } catch (error) {
+        console.error('❌ Error loading tournament state:', error);
       }
     };
     fetchTournamentState();
@@ -168,7 +184,7 @@ const App = () => {
   // --- Сохранение состояния турнира ---
   useEffect(() => {
     const saveState = async () => {
-      await saveTournamentState({
+      const stateToSave = {
         screen,
         players,
         teams,
@@ -176,8 +192,18 @@ const App = () => {
         results,
         format,
         fullSchedule,
-        currentRound
-      });
+        currentRound,
+        savedAt: new Date().toISOString()
+      };
+      
+      // Only save if there's meaningful data or if we're not on the input screen
+      const hasData = players.length > 0 || teams.length > 0 || games.length > 0 || screen !== 'input';
+      if (hasData) {
+        console.log('💾 Saving tournament state:', stateToSave);
+        await saveTournamentState(stateToSave);
+      } else {
+        console.log('ℹ️ Skipping save - no meaningful data to save');
+      }
     };
     saveState();
   }, [screen, players, teams, games, results, format, fullSchedule, currentRound]);
