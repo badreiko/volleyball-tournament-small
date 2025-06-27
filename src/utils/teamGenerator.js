@@ -153,14 +153,6 @@ export const generateTeams = async (players, useBalancing = true) => {
   }
 };
 
-// Расчет общего рейтинга команды
-const calculateTeamRating = async (team) => {
-  if (!team || !team.players || team.players.length === 0) return 0;
-  
-  const playerRatings = await getPlayerRatings();
-  const totalRating = team.players.reduce((sum, player) => sum + (playerRatings[player]?.rating || 1000), 0);
-  return Math.round(totalRating / team.players.length);
-};
 
 // Функция для выбора команд на игру и отдыхающих
 const selectGameTeams = (teams, format) => {
