@@ -438,7 +438,7 @@ const App = () => {
   }, [fullSchedule, showNotification]);
 
   // --- Завершение игры ---
-  const handleGameEnd = useCallback(({ score1, score2, teams }) => {
+  const handleGameEnd = useCallback(({ score1, score2, teams: gameTeams }) => {
     // Используем настройки для максимального счета и очков за игры
     const maxScore = settings?.maxScoreRounds?.[format] || (format === 'triples' ? 15 : 25);
     const winner = score1 > score2 ? 0 : 1;
@@ -473,7 +473,7 @@ const App = () => {
     }
 
     const newGame = {
-      teams,
+      teams: gameTeams,
       score1,
       score2,
       points1,
@@ -490,7 +490,7 @@ const App = () => {
     const updatedGames = [...games, newGame];
     const updatedResults = results.map((r) => {
       // Проверка для обычных команд
-      const teamIdx = teams.findIndex((t) => t.name === r.name);
+      const teamIdx = gameTeams.findIndex((t) => t.name === r.name);
       if (teamIdx !== -1) {
         return {
           ...r,
@@ -508,13 +508,13 @@ const App = () => {
       let teamFound = false;
       let isTeam1 = false;
       
-      if (teams[0].originalTeams) {
-        teamFound = teams[0].originalTeams.some(ot => ot.name === r.name);
+      if (gameTeams[0].originalTeams) {
+        teamFound = gameTeams[0].originalTeams.some(ot => ot.name === r.name);
         if (teamFound) isTeam1 = true;
       }
       
-      if (!teamFound && teams[1].originalTeams) {
-        teamFound = teams[1].originalTeams.some(ot => ot.name === r.name);
+      if (!teamFound && gameTeams[1].originalTeams) {
+        teamFound = gameTeams[1].originalTeams.some(ot => ot.name === r.name);
       }
       
       if (!teamFound) return r; // Команда не участвовала в игре
@@ -540,7 +540,7 @@ const App = () => {
     if (isTournamentOver) {
       (async () => {
         await saveTournamentToHistory({
-          teams,
+          teams, // This refers to the state variable that contains all tournament teams
           games: updatedGames,
           results: updatedResults,
         });
