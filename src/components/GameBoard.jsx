@@ -535,7 +535,9 @@ const GameBoard = ({ teams, resting, onGameEnd, settings, format, currentRound =
                 <div className="flex justify-between items-center">
                   <div>
                     <h3 className="text-xl mb-2 text-darkBlue dark:text-white font-semibold">{t('gameBoard.finalScore')}</h3>
-                    <p className="text-3xl font-bold text-darkBlue dark:text-white">{score1} : {score2}</p>
+                    <p className="text-3xl font-bold text-darkBlue dark:text-white">
+                      {isCourtSwitched ? score2 : score1} : {isCourtSwitched ? score1 : score2}
+                    </p>
                   </div>
                   {prediction && (
                     <div className="text-right">
