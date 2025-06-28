@@ -174,7 +174,11 @@ const GameBoard = ({ teams, resting, onGameEnd, settings, format, currentRound =
   const handleEndGame = () => {
     // Проверяем условия завершения игры
     if ((score1 >= maxScore || score2 >= maxScore) && Math.abs(score1 - score2) >= minPointDifference) {
-      onGameEnd({ score1, score2, teams });
+      // If teams are swapped, we need to correct the score mapping
+      const finalScore1 = isCourtSwitched ? score2 : score1;
+      const finalScore2 = isCourtSwitched ? score1 : score2;
+      
+      onGameEnd({ score1: finalScore1, score2: finalScore2, teams });
       setShowModal(false);
     } else {
       // Формируем подробное сообщение об ошибке
