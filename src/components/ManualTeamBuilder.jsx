@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { FaUsers, FaArrowLeft, FaArrowRight, FaExchangeAlt, FaRandom, FaCheck } from 'react-icons/fa';
-import { motion } from 'framer-motion';
+import { FaUsers, FaArrowLeft, FaArrowRight, FaExchangeAlt, FaRandom, FaCheck, FaExclamationCircle } from 'react-icons/fa';
+import { motion, AnimatePresence } from 'framer-motion';
 import { t } from '../localization';
 
 const ManualTeamBuilder = ({ players, onTeamsCreated, onBack }) => {
@@ -8,6 +8,13 @@ const ManualTeamBuilder = ({ players, onTeamsCreated, onBack }) => {
   const [team2, setTeam2] = useState([]);
   const [unassigned, setUnassigned] = useState([...players]);
   const [draggedPlayer, setDraggedPlayer] = useState(null);
+  const [notification, setNotification] = useState(null);
+
+  // Функция для показа уведомлений
+  const showNotification = (message, type = 'warning') => {
+    setNotification({ message, type });
+    setTimeout(() => setNotification(null), 3000);
+  };
 
   // Автоматическое распределение для начального состояния
   const autoDistribute = () => {
@@ -42,6 +49,43 @@ const ManualTeamBuilder = ({ players, onTeamsCreated, onBack }) => {
     if (!draggedPlayer) return;
 
     const { player, source } = draggedPlayer;
+    const maxTeamSize = Math.ceil(players.length / 2);
+
+    // Проверяем возможность добавления в целевую команду
+    const canAddToTarget = () => {
+      if (target === 'team1') return team1.length < maxTeamSize;
+      if (target === 'team2') return team2.length < maxTeamSize;
+      return true; // для unassigned всегда можно
+    };
+
+    // Если нельзя добавить в целевую команду
+    if (!canAddToTarget()) {
+      // Показываем умное уведомление с предложением альтернативы
+      const alternativeTeam = target === 'team1' ? 'team2' : 'team1';
+      const alternativeTeamName = alternativeTeam === 'team1' ? t('manualTeam.team1') : t('manualTeam.team2');
+      const alternativeCanAccept = alternativeTeam === 'team1' ? team1.length < maxTeamSize : team2.length < maxTeamSize;
+
+      if (alternativeCanAccept) {
+        showNotification(
+          t('manualTeam.teamFullSuggestion', {
+            teamName: target === 'team1' ? t('manualTeam.team1') : t('manualTeam.team2'),
+            alternativeTeam: alternativeTeamName
+          }),
+          'suggestion'
+        );
+      } else {
+        showNotification(
+          t('manualTeam.teamFull', {
+            teamName: target === 'team1' ? t('manualTeam.team1') : t('manualTeam.team2'),
+            maxSize: maxTeamSize
+          }),
+          'warning'
+        );
+      }
+
+      setDraggedPlayer(null);
+      return;
+    }
 
     // Удаляем игрока из источника
     if (source === 'team1') {
@@ -53,21 +97,12 @@ const ManualTeamBuilder = ({ players, onTeamsCreated, onBack }) => {
     }
 
     // Добавляем игрока в целевую область
-    if (target === 'team1' && team1.length < Math.ceil(players.length / 2)) {
+    if (target === 'team1') {
       setTeam1(prev => [...prev, player]);
-    } else if (target === 'team2' && team2.length < Math.ceil(players.length / 2)) {
+    } else if (target === 'team2') {
       setTeam2(prev => [...prev, player]);
     } else if (target === 'unassigned') {
       setUnassigned(prev => [...prev, player]);
-    } else {
-      // Если нельзя добавить в целевую область, возвращаем в источник
-      if (source === 'team1') {
-        setTeam1(prev => [...prev, player]);
-      } else if (source === 'team2') {
-        setTeam2(prev => [...prev, player]);
-      } else if (source === 'unassigned') {
-        setUnassigned(prev => [...prev, player]);
-      }
     }
 
     setDraggedPlayer(null);
@@ -77,8 +112,32 @@ const ManualTeamBuilder = ({ players, onTeamsCreated, onBack }) => {
   const movePlayer = (player, from, to) => {
     // Проверяем лимиты команд
     const maxTeamSize = Math.ceil(players.length / 2);
+
     if ((to === 'team1' && team1.length >= maxTeamSize) ||
         (to === 'team2' && team2.length >= maxTeamSize)) {
+
+      // Показываем умное уведомление
+      const alternativeTeam = to === 'team1' ? 'team2' : 'team1';
+      const alternativeTeamName = alternativeTeam === 'team1' ? t('manualTeam.team1') : t('manualTeam.team2');
+      const alternativeCanAccept = alternativeTeam === 'team1' ? team1.length < maxTeamSize : team2.length < maxTeamSize;
+
+      if (alternativeCanAccept) {
+        showNotification(
+          t('manualTeam.teamFullSuggestion', {
+            teamName: to === 'team1' ? t('manualTeam.team1') : t('manualTeam.team2'),
+            alternativeTeam: alternativeTeamName
+          }),
+          'suggestion'
+        );
+      } else {
+        showNotification(
+          t('manualTeam.teamFull', {
+            teamName: to === 'team1' ? t('manualTeam.team1') : t('manualTeam.team2'),
+            maxSize: maxTeamSize
+          }),
+          'warning'
+        );
+      }
       return;
     }
 
@@ -163,23 +222,48 @@ const ManualTeamBuilder = ({ players, onTeamsCreated, onBack }) => {
   );
 
   // Компонент зоны команды
-  const TeamZone = ({ title, players, teamKey, color }) => (
-    <div
-      onDragOver={handleDragOver}
-      onDrop={(e) => handleDrop(e, teamKey)}
-      className={`card min-h-64 ${
-        draggedPlayer ? 'ring-2 ring-dashed ring-gray-300' : ''
-      } transition-all duration-200`}
-    >
-      <div className="flex items-center justify-between mb-4">
-        <h3 className={`text-lg font-bold flex items-center ${color}`}>
-          <FaUsers className="mr-2" />
-          {title}
-        </h3>
-        <span className="text-sm text-gray-500">
-          {players.length}/{Math.ceil(players.length / 2)} {t('manualTeam.players')}
-        </span>
-      </div>
+  const TeamZone = ({ title, players, teamKey, color }) => {
+    const maxTeamSize = Math.ceil(players.length / 2);
+    const isFull = players.length >= maxTeamSize;
+    const progressPercentage = (players.length / maxTeamSize) * 100;
+
+    return (
+      <div
+        onDragOver={handleDragOver}
+        onDrop={(e) => handleDrop(e, teamKey)}
+        className={`card min-h-64 relative overflow-hidden transition-all duration-200 ${
+          draggedPlayer ? 'ring-2 ring-dashed ring-gray-300' : ''
+        } ${isFull ? 'ring-2 ring-green-300 bg-green-50' : ''}`}
+      >
+        <div className="flex items-center justify-between mb-4">
+          <h3 className={`text-lg font-bold flex items-center ${color}`}>
+            <FaUsers className="mr-2" />
+            {title}
+          </h3>
+          <div className="flex items-center gap-2">
+            <span className={`text-sm font-semibold ${isFull ? 'text-green-600' : 'text-gray-500'}`}>
+              {players.length}/{maxTeamSize} {t('manualTeam.players')}
+            </span>
+            {isFull && (
+              <FaCheck className="text-green-600" />
+            )}
+          </div>
+        </div>
+
+        {/* Progress bar */}
+        <div className="mb-4">
+          <div className="w-full bg-gray-200 rounded-full h-2">
+            <div
+              className={`h-2 rounded-full transition-all duration-300 ${
+                isFull ? 'bg-green-500' : progressPercentage > 80 ? 'bg-yellow-500' : 'bg-blue-500'
+              }`}
+              style={{ width: `${Math.min(progressPercentage, 100)}%` }}
+            />
+          </div>
+          <div className="text-xs text-gray-500 mt-1 text-center">
+            {isFull ? t('manualTeam.teamComplete') : t('manualTeam.teamProgress', { progress: Math.round(progressPercentage) })}
+          </div>
+        </div>
 
       <div className="space-y-2">
         {players.map((player) => (
@@ -202,6 +286,39 @@ const ManualTeamBuilder = ({ players, onTeamsCreated, onBack }) => {
 
   return (
     <div className="p-4 md:p-6 pb-16">
+      {/* Уведомления */}
+      <AnimatePresence>
+        {notification && (
+          <motion.div
+            initial={{ opacity: 0, y: -50, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -50, scale: 0.9 }}
+            className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 max-w-md w-full mx-4"
+          >
+            <div className={`p-4 rounded-lg shadow-lg backdrop-blur-sm border ${
+              notification.type === 'suggestion'
+                ? 'bg-blue-100 border-blue-300 text-blue-800'
+                : 'bg-yellow-100 border-yellow-300 text-yellow-800'
+            }`}>
+              <div className="flex items-center gap-3">
+                <FaExclamationCircle className={`${
+                  notification.type === 'suggestion' ? 'text-blue-500' : 'text-yellow-500'
+                }`} />
+                <div className="flex-1">
+                  <p className="font-medium">{notification.message}</p>
+                </div>
+                <button
+                  onClick={() => setNotification(null)}
+                  className="text-lg leading-none hover:opacity-70 transition-opacity"
+                >
+                  ×
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <div className="max-w-6xl mx-auto fade-in">
         <div className="flex items-center justify-between mb-6">
           <button

@@ -402,6 +402,10 @@ export default {
     allPlayersAssignedStatus: "Všichni hráči jsou přiřazeni",
     bothTeamsHavePlayers: "Oba týmy mají hráče",
     createTeams: "Vytvořit týmy",
+    teamFull: "{teamName} je plný ({maxSize}/{maxSize}). Zkuste jiný tým.",
+    teamFullSuggestion: "{teamName} je plný! Zkuste přidat hráče do {alternativeTeam}.",
+    teamComplete: "Tým je kompletní",
+    teamProgress: "Vyplněno {progress}%",
   },
 
   // Team composition changes

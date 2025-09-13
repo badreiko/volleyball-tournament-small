@@ -402,6 +402,10 @@ export default {
     allPlayersAssignedStatus: "Все игроки распределены",
     bothTeamsHavePlayers: "Обе команды имеют игроков",
     createTeams: "Создать команды",
+    teamFull: "{teamName} заполнена ({maxSize}/{maxSize}). Попробуйте другую команду.",
+    teamFullSuggestion: "{teamName} заполнена! Попробуйте добавить игрока в {alternativeTeam}.",
+    teamComplete: "Команда укомплектована",
+    teamProgress: "Заполнено {progress}%",
   },
 
   // Смена составов
