@@ -172,7 +172,7 @@ const TournamentSettings = ({ onBack, onSave }) => {
                     className="w-16 p-2 border border-darkBlue/30 rounded-lg bg-white text-darkBlue text-center"
                   />
                 </div>
-                <p className="text-xs text-darkBlue/60">{t('settings.formatDescription', { count: '12-14' })}</p>
+                <p className="text-xs text-darkBlue/60">{t('settings.formatDescription', { count: '8-14' })}</p>
               </div>
               
               <div className="p-3 bg-gradient-to-r from-cyan/10 to-darkBlue/5 rounded-lg">

@@ -53,7 +53,7 @@ export default {
   playerInput: {
     startTournament: "Začít turnaj",
     playerCount: "Počet účastníků",
-    playerCountError: "Počet účastníků musí být mezi 12 a 18",
+    playerCountError: "Počet účastníků musí být mezi 8 a 18",
     playerNamePlaceholder: "Jméno hráče",
     playerNameError: "Všechna jména musí být vyplněna",
     uniqueNameError: "Jména musí být jedinečná",
@@ -337,7 +337,7 @@ export default {
     transparency: "Transparentnost:",
     transparencyDesc: "Přístupná historie výsledků a statistik.",
     formats: "Formáty turnaje",
-    fullTeamsFormat: "Kompletní týmy (12-14 účastníků):",
+    fullTeamsFormat: "Kompletní týmy (8-14 účastníků):",
     fullTeamsDesc1: "Dva týmy po 6-7 lidech",
     fullTeamsDesc2: "Hra do 25 bodů s minimálním rozdílem 2 bodů",
     triplesFormat: "Formát trojic (15 nebo 18 účastníků):",

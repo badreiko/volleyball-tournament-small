@@ -38,7 +38,7 @@ const PlayerInput = ({ onStartTournament }) => {
     setSuggestions([]);
     setFocusedInput(-1);
     
-    if (count < 12 || count > 18) {
+    if (count < 8 || count > 18) {
       setError(t('playerInput.playerCountError'));
       setPlayers([]);
     } else {
@@ -117,7 +117,7 @@ const PlayerInput = ({ onStartTournament }) => {
             value={playerCount}
             onChange={handleCountChange}
             className="input-field"
-            placeholder="12–18"
+            placeholder="8–18"
           />
         </div>
         {error && (

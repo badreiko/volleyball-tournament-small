@@ -91,7 +91,7 @@ export const generateTeams = async (players, useBalancing = true, manualTeams = 
   // Если используем балансировку по рейтингу
   if (useBalancing) {
     if (count <= 14) {
-      // Полные команды (12–14 участников)
+      // Полные команды (8–14 участников)
       const [team1Players, team2Players] = await balanceTeams(players, 2);
       
       return [
@@ -136,7 +136,7 @@ export const generateTeams = async (players, useBalancing = true, manualTeams = 
     let teams = [];
 
     if (count <= 14) {
-      // Полные команды (12–14 участников)
+      // Полные команды (8–14 участников)
       const midPoint = Math.ceil(count / 2);
       const team1Players = shuffledPlayers.slice(0, midPoint);
       const team2Players = shuffledPlayers.slice(midPoint);
@@ -183,7 +183,7 @@ const selectGameTeams = (teams, format) => {
   let resting = [];
 
   if (format === 'full') {
-    // Для полных команд (12–14 участников) играют все
+    // Для полных команд (8–14 участников) играют все
     if (shuffledTeams.length === 2) {
       gameTeams = [shuffledTeams[0], shuffledTeams[1]];
       resting = [];

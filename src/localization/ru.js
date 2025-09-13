@@ -53,7 +53,7 @@ export default {
   playerInput: {
     startTournament: "Начать турнир",
     playerCount: "Количество участников",
-    playerCountError: "Количество участников должно быть от 12 до 18",
+    playerCountError: "Количество участников должно быть от 8 до 18",
     playerNamePlaceholder: "Имя игрока",
     playerNameError: "Все имена должны быть заполнены",
     uniqueNameError: "Имена должны быть уникальными",
@@ -337,7 +337,7 @@ export default {
     transparency: "Прозрачность:",
     transparencyDesc: "Доступная история результатов и статистика.",
     formats: "Форматы турнира",
-    fullTeamsFormat: "Полноценные команды (12–14 участников):",
+    fullTeamsFormat: "Полноценные команды (8–14 участников):",
     fullTeamsDesc1: "Две команды по 6–7 человек",
     fullTeamsDesc2: "Игра до 25 очков с минимальной разницей в 2 очка",
     triplesFormat: "Формат троек (15 или 18 участников):",
