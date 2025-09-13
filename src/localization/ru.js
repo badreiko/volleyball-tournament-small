@@ -24,6 +24,7 @@ export default {
     sort: "Сортировка",
     show: "Показать",
     hide: "Скрыть",
+    continue: "Продолжить",
   },
 
   // Заголовки и меню
@@ -63,6 +64,7 @@ export default {
     currentGame: "Текущая игра",
     switchSides: "Поменять местами",
     switchBack: "Вернуть",
+    changeComposition: "Изменить состав",
     gameTo: "Игра до",
     pointsWithDifference: "очков с минимальной разницей в",
     points: "очка",
@@ -361,5 +363,59 @@ export default {
     cancel: "Отмена",
     importing: "Импорт...",
     import: "Импортировать",
+  },
+
+  // Выбор режима команд
+  teamMode: {
+    selectMode: "Выбор режима создания команд",
+    playersCount: "Количество игроков",
+    description: "Выберите способ формирования команд для турнира",
+    automatic: "Автоматический",
+    manual: "Ручной",
+    autoFeature1: "Быстрое создание команд",
+    autoFeature2: "Балансировка по рейтингу",
+    autoFeature3: "Оптимальное распределение",
+    manualFeature1: "Полный контроль составов",
+    manualFeature2: "Выбор партнеров",
+    manualFeature3: "Учет личных предпочтений",
+    autoDescription: "Команды будут созданы автоматически с учетом рейтингов игроков для максимальной сбалансированности.",
+    manualDescription: "Вы сможете самостоятельно распределить игроков по командам, используя удобный интерфейс drag & drop.",
+  },
+
+  // Ручное создание команд
+  manualTeam: {
+    buildTeams: "Создание команд",
+    instructions: "Инструкции",
+    dragAndDrop: "Перетащите игроков между зонами или используйте кнопки для перемещения",
+    autoDistribute: "Авто-распределение",
+    clearAll: "Очистить все",
+    unassigned: "Неназначенные",
+    team1: "Команда 1",
+    team2: "Команда 2",
+    players: "игроков",
+    dropPlayersHere: "Перетащите игроков сюда",
+    allPlayersAssigned: "Все игроки распределены",
+    moveToTeam1: "Переместить в команду 1",
+    moveToTeam2: "Переместить в команду 2",
+    moveToUnassigned: "Убрать из команды",
+    teamStatus: "Статус команд",
+    allPlayersAssignedStatus: "Все игроки распределены",
+    bothTeamsHavePlayers: "Обе команды имеют игроков",
+    createTeams: "Создать команды",
+  },
+
+  // Смена составов
+  teamComposition: {
+    title: "Изменение состава команд",
+    beforeSetDescription: "Настройте составы команд перед {set} сетом",
+    shuffle: "Перемешать",
+    swapTeams: "Поменять команды местами",
+    status: "Статус",
+    compositionChanged: "Состав команд изменен",
+    noChanges: "Изменений нет",
+    teamSizes: "Размеры команд",
+    applyChanges: "Применить изменения",
+    moveToTeam1: "Переместить в команду 1",
+    moveToTeam2: "Переместить в команду 2",
   },
 };

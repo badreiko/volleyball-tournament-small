@@ -35,6 +35,8 @@ import TournamentSettings from './components/TournamentSettings';
 import PlayersRating from './components/PlayersRating';
 import PlayerStats from './components/PlayerStats';
 import DataManagement from './components/DataManagement';
+import TeamModeSelection from './components/TeamModeSelection';
+import ManualTeamBuilder from './components/ManualTeamBuilder';
 import LanguageSwitcher from './localization/LanguageSwitcher';
 import { generateTeams, selectGameTeams, predictGameResult, generateFullSchedule } from './utils/teamGenerator';
 import { 
@@ -61,6 +63,10 @@ const App = () => {
   const [selectedPlayer, setSelectedPlayer] = useState(null);
   const [fullSchedule, setFullSchedule] = useState([]);
   const [currentRound, setCurrentRound] = useState(0);
+
+  // --- Новые состояния для ручного режима ---
+  const [pendingPlayers, setPendingPlayers] = useState([]);
+  const [teamCreationMode, setTeamCreationMode] = useState(null);
   
   // --- UI состояния ---
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -244,14 +250,14 @@ const App = () => {
   }, []);
 
   // --- Функция для логики запуска нового турнира ---
-  const startNewTournament = useCallback(async (playersList) => {
+  const startNewTournament = useCallback(async (playersList, manualTeams = null) => {
     try {
       console.log('🔄 Starting new tournament with players:', playersList);
-      
+
       // Clear existing tournament state first
       await clearTournamentState();
       console.log('✅ Previous tournament state cleared');
-      
+
       // Clear all local state before setting new values
       setPlayers([]);
       setTeams([]);
@@ -263,13 +269,11 @@ const App = () => {
       setFullSchedule([]);
       setCurrentRound(0);
       setSelectedPlayer(null);
-      
+      setPendingPlayers([]);
+      setTeamCreationMode(null);
+
       // Now set the new players
       setPlayers(playersList);
-
-      // Генерация команд с балансировкой
-      const newTeams = await generateTeams(playersList, settings?.useBalancing);
-      setTeams(newTeams);
 
       // Определение формата
       let newFormat;
@@ -277,6 +281,10 @@ const App = () => {
       else if (playersList.length === 15 || playersList.length === 18) newFormat = 'triples';
       else newFormat = 'doubles';
       setFormat(newFormat);
+
+      // Генерация команд с балансировкой или использование готовых команд
+      const newTeams = manualTeams || await generateTeams(playersList, settings?.useBalancing);
+      setTeams(newTeams);
 
       // Инициализация результатов
       const initialResults = newTeams.map(team => ({
@@ -301,32 +309,32 @@ const App = () => {
 
       setGames([]);
       setScreen('game');
-      
+
       // Сбрасываем диалог подтверждения
       setShowResetConfirm(false);
       setPendingPlayersList(null);
-      
+
       // Показать уведомление
       showNotification(
-        t('notifications.tournamentCreated'), 
-        t('notifications.teamsFormedMessage', { 
-          games: schedule.length, 
-          format: t(`tournamentFormat.${newFormat}`) 
+        t('notifications.tournamentCreated'),
+        t('notifications.teamsFormedMessage', {
+          games: schedule.length,
+          format: t(`tournamentFormat.${newFormat}`)
         }),
         'success'
       );
-      
+
       console.log('✅ New tournament started successfully');
     } catch (error) {
       console.error('❌ Error starting new tournament:', error);
-      
+
       // Clear confirmation dialog state in case of error
       setShowResetConfirm(false);
       setPendingPlayersList(null);
-      
+
       showNotification(
-        t('notifications.error'), 
-        'Failed to start new tournament. Please try again.', 
+        t('notifications.error'),
+        'Failed to start new tournament. Please try again.',
         'error'
       );
     }
@@ -336,16 +344,59 @@ const App = () => {
   const handleStartTournament = useCallback((playersList) => {
     // Проверка, запущен ли активный турнир (есть ли команды и игроки)
     const isActiveTournament = players.length > 0 && teams.length > 0;
-    
+
     if (isActiveTournament) {
       // Если есть активный турнир, показываем диалог подтверждения
       setPendingPlayersList(playersList);
       setShowResetConfirm(true);
     } else {
-      // Если активного турнира нет, сразу запускаем новый
-      startNewTournament(playersList);
+      // Определяем формат и решаем, показывать ли выбор режима
+      const isFullTeamFormat = playersList.length <= 14;
+
+      if (isFullTeamFormat) {
+        // Для полных команд показываем выбор режима
+        setPendingPlayers(playersList);
+        setScreen('teamMode');
+      } else {
+        // Для других форматов сразу создаем турнир автоматически
+        startNewTournament(playersList);
+      }
     }
   }, [players, teams, startNewTournament]);
+
+  // --- Обработчик выбора режима создания команд ---
+  const handleModeSelection = useCallback((mode, playersList) => {
+    setTeamCreationMode(mode);
+
+    if (mode === 'auto') {
+      // Автоматический режим - сразу запускаем турнир
+      startNewTournament(playersList);
+    } else {
+      // Ручной режим - переходим к конструктору команд
+      setScreen('manualTeams');
+    }
+  }, [startNewTournament]);
+
+  // --- Обработчик создания команд в ручном режиме ---
+  const handleTeamsCreated = useCallback((createdTeams) => {
+    // Запускаем турнир с готовыми командами
+    startNewTournament(pendingPlayers, createdTeams);
+  }, [startNewTournament, pendingPlayers]);
+
+  // --- Обработчик изменения составов во время турнира ---
+  const handleTeamsModified = useCallback((modifiedTeams) => {
+    setTeams(modifiedTeams);
+    // Обновляем текущие команды в игре
+    if (fullSchedule && fullSchedule.length > currentRound) {
+      const updatedSchedule = [...fullSchedule];
+      updatedSchedule[currentRound] = {
+        ...updatedSchedule[currentRound],
+        gameTeams: modifiedTeams
+      };
+      setFullSchedule(updatedSchedule);
+      setCurrentGameTeams(modifiedTeams);
+    }
+  }, [fullSchedule, currentRound]);
 
   // --- Сброс турнира ---
   const handleNewTournament = useCallback(async () => {
@@ -388,10 +439,12 @@ const App = () => {
         setCurrentRound(0);
         setSelectedPlayer(null); // Clear selected player
         setScreen('input');
-        
+
         // Clear confirmation dialog state
         setShowResetConfirm(false);
         setPendingPlayersList(null);
+        setPendingPlayers([]);
+        setTeamCreationMode(null);
         
         console.log('✅ All local state cleared');
         
@@ -689,8 +742,10 @@ const App = () => {
             teams={currentGameTeams}
             resting={restingTeams}
             onGameEnd={handleGameEnd}
+            onTeamsModified={handleTeamsModified}
             settings={settings}
             format={format}
+            currentRound={currentRound}
           />
         ) : null;
       case 'games':
@@ -717,19 +772,31 @@ const App = () => {
       case 'playerStats':
         return <PlayerStats playerName={selectedPlayer} onBack={() => setScreen('players')} />;
       case 'data':
-        return <DataManagement 
-          onBack={() => setScreen('input')} 
+        return <DataManagement
+          onBack={() => setScreen('input')}
           onExport={handleExportData}
           onShowImport={() => setShowDataImport(true)}
+        />;
+      case 'teamMode':
+        return <TeamModeSelection
+          players={pendingPlayers}
+          onModeSelect={handleModeSelection}
+          onBack={() => setScreen('input')}
+        />;
+      case 'manualTeams':
+        return <ManualTeamBuilder
+          players={pendingPlayers}
+          onTeamsCreated={handleTeamsCreated}
+          onBack={() => setScreen('teamMode')}
         />;
       default:
         return <PlayerInput onStartTournament={handleStartTournament} />;
     }
   }, [
-    screen, handleStartTournament, currentGameTeams, restingTeams, 
-    handleGameEnd, settings, games, teams, results, fullSchedule, currentRound,
+    screen, handleStartTournament, currentGameTeams, restingTeams,
+    handleGameEnd, handleTeamsModified, settings, games, teams, results, fullSchedule, currentRound,
     handleViewPlayerStats, handleSettingsUpdate, selectedPlayer, handleStartGame,
-    handleExportData
+    handleExportData, pendingPlayers, handleModeSelection, handleTeamsCreated
   ]);
 
   // --- Определение классов для темы ---

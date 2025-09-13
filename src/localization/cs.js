@@ -24,6 +24,7 @@ export default {
     sort: "Seřadit",
     show: "Zobrazit",
     hide: "Skrýt",
+    continue: "Pokračovat",
   },
 
   // Headers and menu
@@ -63,6 +64,7 @@ export default {
     currentGame: "Aktuální hra",
     switchSides: "Vyměnit strany",
     switchBack: "Vrátit strany",
+    changeComposition: "Změnit složení",
     gameTo: "Hra do",
     pointsWithDifference: "bodů s minimálním rozdílem",
     points: "bodů",
@@ -361,5 +363,59 @@ export default {
     cancel: "Zrušit",
     importing: "Importuje se...",
     import: "Importovat",
+  },
+
+  // Team mode selection
+  teamMode: {
+    selectMode: "Výběr režimu vytváření týmů",
+    playersCount: "Počet hráčů",
+    description: "Vyberte způsob formování týmů pro turnaj",
+    automatic: "Automatický",
+    manual: "Ruční",
+    autoFeature1: "Rychlé vytvoření týmů",
+    autoFeature2: "Vyvážení podle hodnocení",
+    autoFeature3: "Optimální rozdělení",
+    manualFeature1: "Plná kontrola složení",
+    manualFeature2: "Výběr partnerů",
+    manualFeature3: "Zohlednění osobních preferencí",
+    autoDescription: "Týmy budou vytvořeny automaticky s ohledem na hodnocení hráčů pro maximální vyvážení.",
+    manualDescription: "Budete moci sami rozdělit hráče do týmů pomocí pohodlného rozhraní drag & drop.",
+  },
+
+  // Manual team building
+  manualTeam: {
+    buildTeams: "Vytváření týmů",
+    instructions: "Instrukce",
+    dragAndDrop: "Přetáhněte hráče mezi zónami nebo použijte tlačítka pro přesunutí",
+    autoDistribute: "Auto-rozdělení",
+    clearAll: "Vyčistit vše",
+    unassigned: "Nepřiřazení",
+    team1: "Tým 1",
+    team2: "Tým 2",
+    players: "hráčů",
+    dropPlayersHere: "Přetáhněte hráče sem",
+    allPlayersAssigned: "Všichni hráči jsou přiřazeni",
+    moveToTeam1: "Přesunout do týmu 1",
+    moveToTeam2: "Přesunout do týmu 2",
+    moveToUnassigned: "Odebrat z týmu",
+    teamStatus: "Stav týmů",
+    allPlayersAssignedStatus: "Všichni hráči jsou přiřazeni",
+    bothTeamsHavePlayers: "Oba týmy mají hráče",
+    createTeams: "Vytvořit týmy",
+  },
+
+  // Team composition changes
+  teamComposition: {
+    title: "Změna složení týmů",
+    beforeSetDescription: "Upravte složení týmů před {set} setem",
+    shuffle: "Promíchat",
+    swapTeams: "Vyměnit týmy",
+    status: "Stav",
+    compositionChanged: "Složení týmů bylo změněno",
+    noChanges: "Žádné změny",
+    teamSizes: "Velikosti týmů",
+    applyChanges: "Použít změny",
+    moveToTeam1: "Přesunout do týmu 1",
+    moveToTeam2: "Přesunout do týmu 2",
   },
 };

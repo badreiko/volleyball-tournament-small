@@ -1,20 +1,22 @@
 import { useState, useEffect, useRef } from 'react';
-import { 
-  FaVolleyballBall, 
-  FaCheck, 
-  FaUndo, 
-  FaChartLine, 
+import {
+  FaVolleyballBall,
+  FaCheck,
+  FaUndo,
+  FaChartLine,
   FaHandPointUp,
   FaHistory,
-  FaExchangeAlt as FaSwitch
+  FaExchangeAlt as FaSwitch,
+  FaUsers
 } from 'react-icons/fa';
 import { IoMdAddCircleOutline, IoMdRemoveCircleOutline } from 'react-icons/io';
 import { MdSwipe } from 'react-icons/md';
 import { motion } from 'framer-motion';
-import { calculateTeamRating, predictGameResult } from '../utils/teamGenerator';
+import { calculateTeamRating, predictGameResult, modifyTeamComposition } from '../utils/teamGenerator';
 import { t } from '../localization';
+import TeamCompositionModal from './TeamCompositionModal';
 
-const GameBoard = ({ teams, resting, onGameEnd, settings, format, currentRound = 0 }) => {
+const GameBoard = ({ teams, resting, onGameEnd, settings, format, currentRound = 0, onTeamsModified }) => {
   const [score1, setScore1] = useState(0);
   const [score2, setScore2] = useState(0);
   const [timer, setTimer] = useState(settings?.roundDuration * 60 || 600);
@@ -25,7 +27,9 @@ const GameBoard = ({ teams, resting, onGameEnd, settings, format, currentRound =
   const [errorMessage, setErrorMessage] = useState("");
   const [isCourtSwitched, setIsCourtSwitched] = useState(false);
   const [showScoreHistory, setShowScoreHistory] = useState(true);
-  
+  const [showCompositionModal, setShowCompositionModal] = useState(false);
+  const [currentTeams, setCurrentTeams] = useState(teams);
+
   // История набора очков в правильном формате
   const [scoringHistory, setScoringHistory] = useState([]);
 
@@ -36,13 +40,18 @@ const GameBoard = ({ teams, resting, onGameEnd, settings, format, currentRound =
   const maxScore = settings?.maxScoreRounds?.[format] || (format === 'triples' ? 15 : 25);
   const minPointDifference = settings?.minPointDifference || 2;
   
+  // Обновляем локальное состояние команд при изменении пропсов
+  useEffect(() => {
+    setCurrentTeams(teams);
+  }, [teams]);
+
   // Получаем прогноз для текущей игры
   useEffect(() => {
-    if (teams && teams.length === 2 && settings?.showPredictions) {
-      const gamePrediction = predictGameResult(teams[0], teams[1]);
+    if (currentTeams && currentTeams.length === 2 && settings?.showPredictions) {
+      const gamePrediction = predictGameResult(currentTeams[0], currentTeams[1]);
       setPrediction(gamePrediction);
     }
-  }, [teams, settings?.showPredictions]);
+  }, [currentTeams, settings?.showPredictions]);
 
   useEffect(() => {
     let interval;
@@ -177,21 +186,33 @@ const GameBoard = ({ teams, resting, onGameEnd, settings, format, currentRound =
       // If teams are swapped, we need to correct the score mapping
       const finalScore1 = isCourtSwitched ? score2 : score1;
       const finalScore2 = isCourtSwitched ? score1 : score2;
-      
-      onGameEnd({ score1: finalScore1, score2: finalScore2, teams });
+
+      onGameEnd({ score1: finalScore1, score2: finalScore2, teams: currentTeams });
       setShowModal(false);
     } else {
       // Формируем подробное сообщение об ошибке
       let message = t('gameBoard.gameFinishError') + " ";
-      
+
       if (score1 < maxScore && score2 < maxScore) {
         message += t('gameBoard.needToReachScore', { score: maxScore });
       } else if (Math.abs(score1 - score2) < minPointDifference) {
         message += t('gameBoard.needPointDifference', { diff: minPointDifference });
       }
-      
+
       setErrorMessage(message);
       setTimeout(() => setErrorMessage(""), 5000);
+    }
+  };
+
+  // Обработчик изменения составов команд
+  const handleCompositionChange = (newTeam1Players, newTeam2Players) => {
+    const modifiedTeams = modifyTeamComposition(currentTeams, newTeam1Players, newTeam2Players);
+    setCurrentTeams(modifiedTeams);
+    setShowCompositionModal(false);
+
+    // Уведомляем родительский компонент об изменении команд
+    if (onTeamsModified) {
+      onTeamsModified(modifiedTeams);
     }
   };
 
@@ -224,14 +245,27 @@ const GameBoard = ({ teams, resting, onGameEnd, settings, format, currentRound =
           <h2 className="text-2xl md:text-3xl font-bold text-darkBlue flex items-center">
             <FaVolleyballBall className="mr-3 text-cyan" /> {t('gameBoard.currentGame')}
           </h2>
-          {/* Кнопка смены сторон - перемещена в заголовок */}
-          <button
-            onClick={handleCourtSwitch}
-            className="btn bg-cyan/10 text-cyan hover:bg-cyan/20 transition-all py-2 px-4 flex items-center justify-center gap-2 rounded-lg"
-          >
-            <FaSwitch className={`transition-transform duration-300 ${isCourtSwitched ? 'rotate-180' : ''}`} />
-            <span className="hidden md:inline">{isCourtSwitched ? t('gameBoard.switchBack') : t('gameBoard.switchSides')}</span>
-          </button>
+          <div className="flex gap-2">
+            {/* Кнопка смены составов - только для полных команд */}
+            {format === 'full' && (
+              <button
+                onClick={() => setShowCompositionModal(true)}
+                className="btn bg-orange-100 text-orange-600 hover:bg-orange-200 transition-all py-2 px-4 flex items-center justify-center gap-2 rounded-lg"
+                disabled={gameFinished}
+              >
+                <FaUsers className="text-lg" />
+                <span className="hidden md:inline">{t('gameBoard.changeComposition')}</span>
+              </button>
+            )}
+            {/* Кнопка смены сторон */}
+            <button
+              onClick={handleCourtSwitch}
+              className="btn bg-cyan/10 text-cyan hover:bg-cyan/20 transition-all py-2 px-4 flex items-center justify-center gap-2 rounded-lg"
+            >
+              <FaSwitch className={`transition-transform duration-300 ${isCourtSwitched ? 'rotate-180' : ''}`} />
+              <span className="hidden md:inline">{isCourtSwitched ? t('gameBoard.switchBack') : t('gameBoard.switchSides')}</span>
+            </button>
+          </div>
         </div>
         
         {/* Информация о счете и условиях завершения */}
@@ -313,10 +347,10 @@ const GameBoard = ({ teams, resting, onGameEnd, settings, format, currentRound =
           <div className="p-4 rounded-xl glass-effect mb-4 md:flex-grow">
             <div className="flex justify-between items-center mb-4">
               <h3 className="font-semibold text-darkBlue text-lg md:text-xl">
-                {isCourtSwitched ? teams[1].name : teams[0].name}
+                {isCourtSwitched ? currentTeams[1].name : currentTeams[0].name}
               </h3>
               <h3 className="font-semibold text-darkBlue text-lg md:text-xl">
-                {isCourtSwitched ? teams[0].name : teams[1].name}
+                {isCourtSwitched ? currentTeams[0].name : currentTeams[1].name}
               </h3>
             </div>
             
@@ -465,16 +499,16 @@ const GameBoard = ({ teams, resting, onGameEnd, settings, format, currentRound =
                 <div className="flex">
                   {/* Имена команд - с динамическим размером шрифта */}
                   <div className="w-28 shrink-0 mr-2">
-                    {teams.map((team, index) => (
-                      <div 
+                    {currentTeams.map((team, index) => (
+                      <div
                         key={`team-${index}`}
                         className="h-8 flex items-center"
                       >
-                        <span 
+                        <span
                           className={`font-semibold text-orange-900 whitespace-nowrap truncate max-w-full`}
-                          style={{ fontSize: Math.max(10, Math.min(16, 100 / (isCourtSwitched ? (index === 0 ? teams[1].name : teams[0].name) : team.name).length)) + 'px' }}
+                          style={{ fontSize: Math.max(10, Math.min(16, 100 / (isCourtSwitched ? (index === 0 ? currentTeams[1].name : currentTeams[0].name) : team.name).length)) + 'px' }}
                         >
-                          {isCourtSwitched ? (index === 0 ? teams[1].name : teams[0].name) : team.name} +
+                          {isCourtSwitched ? (index === 0 ? currentTeams[1].name : currentTeams[0].name) : team.name} +
                         </span>
                       </div>
                     ))}
@@ -566,6 +600,15 @@ const GameBoard = ({ teams, resting, onGameEnd, settings, format, currentRound =
           </div>
         </div>
       )}
+
+      {/* Modal for team composition changes */}
+      <TeamCompositionModal
+        teams={currentTeams}
+        onCompositionChange={handleCompositionChange}
+        onCancel={() => setShowCompositionModal(false)}
+        isVisible={showCompositionModal}
+        currentSet={currentRound}
+      />
     </div>
   );
 };

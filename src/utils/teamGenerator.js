@@ -63,10 +63,31 @@ const balanceTeams = async (players, teamCount = 2) => {
   return teams;
 };
 
+// Функция для создания команд в ручном режиме
+export const createManualTeams = (team1Players, team2Players) => {
+  return [
+    { name: 'Команда 1', players: team1Players, teamRating: 0 },
+    { name: 'Команда 2', players: team2Players, teamRating: 0 }
+  ];
+};
+
+// Функция для модификации составов команд между сетами
+export const modifyTeamComposition = (currentTeams, newTeam1Players, newTeam2Players) => {
+  return [
+    { ...currentTeams[0], players: newTeam1Players },
+    { ...currentTeams[1], players: newTeam2Players }
+  ];
+};
+
 // Основная функция для генерации команд
-export const generateTeams = async (players, useBalancing = true) => {
+export const generateTeams = async (players, useBalancing = true, manualTeams = null) => {
   const count = players.length;
-  
+
+  // Если переданы готовые команды из ручного режима
+  if (manualTeams) {
+    return manualTeams;
+  }
+
   // Если используем балансировку по рейтингу
   if (useBalancing) {
     if (count <= 14) {
