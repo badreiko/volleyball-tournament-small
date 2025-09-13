@@ -222,10 +222,10 @@ const ManualTeamBuilder = ({ players, onTeamsCreated, onBack }) => {
   );
 
   // Компонент зоны команды
-  const TeamZone = ({ title, players, teamKey, color }) => {
+  const TeamZone = ({ title, players: teamPlayers, teamKey, color }) => {
     const maxTeamSize = Math.ceil(players.length / 2);
-    const isFull = players.length >= maxTeamSize;
-    const progressPercentage = (players.length / maxTeamSize) * 100;
+    const isFull = teamPlayers.length >= maxTeamSize;
+    const progressPercentage = (teamPlayers.length / maxTeamSize) * 100;
 
     return (
       <div
@@ -242,7 +242,7 @@ const ManualTeamBuilder = ({ players, onTeamsCreated, onBack }) => {
           </h3>
           <div className="flex items-center gap-2">
             <span className={`text-sm font-semibold ${isFull ? 'text-green-600' : 'text-gray-500'}`}>
-              {players.length}/{maxTeamSize} {t('manualTeam.players')}
+              {teamPlayers.length}/{maxTeamSize} {t('manualTeam.players')}
             </span>
             {isFull && (
               <FaCheck className="text-green-600" />
@@ -266,7 +266,7 @@ const ManualTeamBuilder = ({ players, onTeamsCreated, onBack }) => {
         </div>
 
       <div className="space-y-2">
-        {players.map((player) => (
+        {teamPlayers.map((player) => (
           <PlayerCard
             key={player}
             player={player}
@@ -275,7 +275,7 @@ const ManualTeamBuilder = ({ players, onTeamsCreated, onBack }) => {
           />
         ))}
 
-        {players.length === 0 && (
+        {teamPlayers.length === 0 && (
           <div className="text-center py-8 text-gray-400 border-2 border-dashed border-gray-200 rounded-lg">
             {t('manualTeam.dropPlayersHere')}
           </div>
@@ -283,6 +283,7 @@ const ManualTeamBuilder = ({ players, onTeamsCreated, onBack }) => {
       </div>
     </div>
   );
+};
 
   return (
     <div className="p-4 md:p-6 pb-16">
